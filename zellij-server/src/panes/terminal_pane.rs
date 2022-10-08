@@ -290,10 +290,45 @@ impl Pane for TerminalPane {
         if self.should_render() {
             let content_x = self.get_content_x();
             let content_y = self.get_content_y();
-            let rows = self.get_content_rows();
-            let columns = self.get_content_columns();
-            if rows < 1 || columns < 1 {
-                return Ok(None);
+
+            let (mut character_chunks, sixel_image_chunks) =
+                self.grid.read_changes(content_x, content_y);
+            for character_chunk in character_chunks.iter_mut() {
+                character_chunk.add_changed_colors(self.grid.changed_colors);
+                if self
+                    .grid
+                    .selection
+                    .contains_row(character_chunk.y.saturating_sub(content_y))
+                {
+                    let background_color = self.style.colors.bg.into();
+                    character_chunk.add_selection_and_colors(
+                        self.grid.selection,
+                        background_color,
+                        None,
+                        content_x,
+                        content_y,
+                    );
+                } else if !self.grid.search_results.selections.is_empty() {
+                    for res in self.grid.search_results.selections.iter() {
+                        if res.contains_row(character_chunk.y.saturating_sub(content_y)) {
+                            let (select_background_palette, select_foreground_palette) =
+                                if Some(res) == self.grid.search_results.active.as_ref() {
+                                    (self.style.colors.orange, self.style.colors.black)
+                                } else {
+                                    (self.style.colors.green, self.style.colors.black)
+                                };
+                            let background_color = select_background_palette.into();
+                            let foreground_color = select_foreground_palette.into();
+                            character_chunk.add_selection_and_colors(
+                                *res,
+                                background_color,
+                                Some(foreground_color),
+                                content_x,
+                                content_y,
+                            );
+                        }
+                    }
+                }
             }
             match self.grid.render(content_x, content_y, &self.style) {
                 Ok(rendered_assets) => {
