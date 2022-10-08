@@ -636,6 +636,7 @@ impl Default for ThemeHue {
 pub enum PaletteColor {
     Rgb((u8, u8, u8)),
     EightBit(u8),
+    Transparent,
 }
 impl Default for PaletteColor {
     fn default() -> PaletteColor {
