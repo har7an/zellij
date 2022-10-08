@@ -18,14 +18,40 @@ macro_rules! palette_match {
 #[macro_export]
 macro_rules! style {
     ($fg:expr, $bg:expr) => {
-        ansi_term::Style::new()
-            .fg(match $fg {
-                PaletteColor::Rgb((r, g, b)) => ansi_term::Color::RGB(r, g, b),
-                PaletteColor::EightBit(color) => ansi_term::Color::Fixed(color),
-            })
-            .on(match $bg {
-                PaletteColor::Rgb((r, g, b)) => ansi_term::Color::RGB(r, g, b),
-                PaletteColor::EightBit(color) => ansi_term::Color::Fixed(color),
-            })
+        match ($fg, $bg) {
+            (PaletteColor::Transparent, PaletteColor::Transparent) => ansi_term::Style::new(),
+            (PaletteColor::Transparent, PaletteColor::Rgb((r, g, b))) => {
+                ansi_term::Style::new().on(ansi_term::Color::RGB(r, g, b))
+            },
+            (PaletteColor::Transparent, PaletteColor::EightBit(color)) => {
+                ansi_term::Style::new().on(ansi_term::Color::Fixed(color))
+            },
+            (PaletteColor::Rgb((r, g, b)), PaletteColor::Transparent) => {
+                ansi_term::Style::new().fg(ansi_term::Color::RGB(r, g, b))
+            },
+            (PaletteColor::Rgb((r, g, b)), PaletteColor::Rgb((r2, g2, b2))) => {
+                ansi_term::Style::new()
+                    .fg(ansi_term::Color::RGB(r, g, b))
+                    .on(ansi_term::Color::RGB(r2, g2, b2))
+            },
+            (PaletteColor::Rgb((r, g, b)), PaletteColor::EightBit(color)) => {
+                ansi_term::Style::new()
+                    .fg(ansi_term::Color::RGB(r, g, b))
+                    .on(ansi_term::Color::Fixed(color))
+            },
+            (PaletteColor::EightBit(color), PaletteColor::Transparent) => {
+                ansi_term::Style::new().fg(ansi_term::Color::Fixed(color))
+            },
+            (PaletteColor::EightBit(color), PaletteColor::Rgb((r2, g2, b2))) => {
+                ansi_term::Style::new()
+                    .fg(ansi_term::Color::Fixed(color))
+                    .on(ansi_term::Color::RGB(r2, g2, b2))
+            },
+            (PaletteColor::EightBit(color), PaletteColor::EightBit(color2)) => {
+                ansi_term::Style::new()
+                    .fg(ansi_term::Color::Fixed(color))
+                    .on(ansi_term::Color::Fixed(color2))
+            },
+        }
     };
 }
