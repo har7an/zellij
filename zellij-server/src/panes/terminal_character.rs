@@ -47,6 +47,8 @@ impl From<PaletteColor> for AnsiCode {
         match palette_color {
             PaletteColor::Rgb((r, g, b)) => AnsiCode::RgbCode((r, g, b)),
             PaletteColor::EightBit(index) => AnsiCode::ColorIndex(index),
+            // See code "49" in add_style_from_ansi_params
+            PaletteColor::Transparent => AnsiCode::Reset,
         }
     }
 }
