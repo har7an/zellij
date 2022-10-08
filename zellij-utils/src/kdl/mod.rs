@@ -543,6 +543,10 @@ impl TryFrom<(&str, &KdlDocument)> for PaletteColor {
             }
         };
         let is_eight_bit = || kdl_first_entry_as_i64!(color).is_some() && entry_count == 1;
+        let is_transparent = || match kdl_first_entry_as_string!(color) {
+            Some(s) => s == "transparent",
+            None => false,
+        };
         if is_rgb() {
             let mut channels = kdl_entries_as_i64!(color);
             let r = channels.next().unwrap().ok_or(ConfigError::new_kdl_error(
