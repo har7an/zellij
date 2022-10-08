@@ -86,6 +86,7 @@ impl Display for BoundarySymbol {
                     PaletteColor::EightBit(color) => {
                         write!(f, "{}", Fixed(color).paint(self.boundary_type))
                     },
+                    PaletteColor::Transparent => write!(f, "{}", self.boundary_type),
                 },
                 None => write!(f, "{}", self.boundary_type),
             },
