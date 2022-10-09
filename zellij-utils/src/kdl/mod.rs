@@ -624,6 +624,8 @@ impl TryFrom<(&str, &KdlDocument)> for PaletteColor {
                 color.span().len(),
             ))?;
             Ok(PaletteColor::EightBit(n as u8))
+        } else if is_transparent() {
+            Ok(PaletteColor::Transparent)
         } else {
             Err(ConfigError::new_kdl_error(
                 "Failed to parse color".into(),
