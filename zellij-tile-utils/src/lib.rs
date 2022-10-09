@@ -20,13 +20,17 @@ macro_rules! palette_match {
 macro_rules! style {
     ($fg:expr, $bg:expr) => {
         match ($fg, $bg) {
-            (PaletteColor::Transparent, PaletteColor::Transparent) => ansi_term::Style::new(),
-            (PaletteColor::Transparent, PaletteColor::Rgb((r, g, b))) => {
-                ansi_term::Style::new().on(ansi_term::Color::RGB(r, g, b))
+            (PaletteColor::Transparent, PaletteColor::Transparent) => {
+                ansi_term::Style::new().hidden()
             },
-            (PaletteColor::Transparent, PaletteColor::EightBit(color)) => {
-                ansi_term::Style::new().on(ansi_term::Color::Fixed(color))
-            },
+            (PaletteColor::Transparent, PaletteColor::Rgb((r, g, b))) => ansi_term::Style::new()
+                .fg(ansi_term::Color::RGB(r, g, b))
+                .on(ansi_term::Color::Clear)
+                .reverse(),
+            (PaletteColor::Transparent, PaletteColor::EightBit(color)) => ansi_term::Style::new()
+                .fg(ansi_term::Color::Fixed(color))
+                .on(ansi_term::Color::Clear)
+                .reverse(),
             (PaletteColor::Rgb((r, g, b)), PaletteColor::Transparent) => {
                 ansi_term::Style::new().fg(ansi_term::Color::RGB(r, g, b))
             },
