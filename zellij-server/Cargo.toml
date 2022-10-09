@@ -10,7 +10,8 @@ license = "MIT"
 
 [dependencies]
 highway = "0.6.4"
-ansi_term = "0.12.1"
+#ansi_term = "0.12.1"
+ansi_term = { path = "../../rust-ansi-term" }
 async-trait = "0.1.50"
 base64 = "0.13.0"
 byteorder = "1.4.3"
