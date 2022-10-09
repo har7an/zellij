@@ -404,18 +404,9 @@ pub fn fullscreen_panes_to_hide(palette: &Palette, panes_to_hide: usize) -> Line
 pub fn floating_panes_are_visible(mode_info: &ModeInfo) -> LinePart {
     let palette = mode_info.style.colors;
     let km = &mode_info.get_mode_keybinds();
-    let white_color = match palette.white {
-        PaletteColor::Rgb((r, g, b)) => RGB(r, g, b),
-        PaletteColor::EightBit(color) => Fixed(color),
-    };
-    let green_color = match palette.green {
-        PaletteColor::Rgb((r, g, b)) => RGB(r, g, b),
-        PaletteColor::EightBit(color) => Fixed(color),
-    };
-    let orange_color = match palette.orange {
-        PaletteColor::Rgb((r, g, b)) => RGB(r, g, b),
-        PaletteColor::EightBit(color) => Fixed(color),
-    };
+    let white_color = palette_match!(palette.white);
+    let green_color = palette_match!(palette.green);
+    let orange_color = palette_match!(palette.orange);
     let shortcut_left_separator = Style::new().fg(white_color).bold().paint(" (");
     let shortcut_right_separator = Style::new().fg(white_color).bold().paint("): ");
     let floating_panes = "FLOATING PANES VISIBLE";
@@ -503,14 +494,8 @@ pub fn locked_fullscreen_panes_to_hide(palette: &Palette, panes_to_hide: usize) 
 }
 
 pub fn locked_floating_panes_are_visible(palette: &Palette) -> LinePart {
-    let white_color = match palette.white {
-        PaletteColor::Rgb((r, g, b)) => RGB(r, g, b),
-        PaletteColor::EightBit(color) => Fixed(color),
-    };
-    let orange_color = match palette.orange {
-        PaletteColor::Rgb((r, g, b)) => RGB(r, g, b),
-        PaletteColor::EightBit(color) => Fixed(color),
-    };
+    let white_color = palette_match!(palette.white);
+    let orange_color = palette_match!(palette.orange);
     let shortcut_left_separator = Style::new().fg(white_color).bold().paint(" (");
     let shortcut_right_separator = Style::new().fg(white_color).bold().paint(")");
     let locked_text = " -- INTERFACE LOCKED -- ";
