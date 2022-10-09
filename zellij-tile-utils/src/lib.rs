@@ -9,8 +9,9 @@ macro_rules! rgb {
 macro_rules! palette_match {
     ($palette_color:expr) => {
         match $palette_color {
-            PaletteColor::Rgb((r, g, b)) => RGB(r, g, b),
-            PaletteColor::EightBit(color) => Fixed(color),
+            PaletteColor::Rgb((r, g, b)) => ansi_term::Color::RGB(r, g, b),
+            PaletteColor::EightBit(color) => ansi_term::Color::Fixed(color),
+            PaletteColor::Transparent => ansi_term::Color::Clear,
         }
     };
 }
