@@ -142,6 +142,9 @@ impl ZellijPlugin for State {
             PaletteColor::EightBit(color) => {
                 print!("{}\u{1b}[48;5;{}m\u{1b}[0K", output, color);
             },
+            PaletteColor::Transparent => {
+                println!("{}\u{1b}[49m\u{1b}[0K", s);
+            }
         }
     }
 }

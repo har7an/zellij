@@ -4,7 +4,7 @@ mod tip;
 
 use ansi_term::{
     ANSIString,
-    Colour::{Fixed, RGB},
+    Colour::{Fixed, RGB, Clear},
     Style,
 };
 
@@ -277,6 +277,9 @@ impl ZellijPlugin for State {
                         print!("\u{1b}[m{}\u{1b}[0K", second_line);
                     }
                 }
+            },
+            PaletteColor::Transparent => {
+                println!("{}\u{1b}[49m\u{1b}[0K", first_line);
             },
         }
 
