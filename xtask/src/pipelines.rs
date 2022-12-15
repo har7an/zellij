@@ -220,37 +220,48 @@ pub fn publish(sh: &Shell, flags: flags::Publish) -> anyhow::Result<()> {
         .context(err_context)?;
 
         // Commit changes
-        cmd!(sh, "git commit {dry_run...} -aem")
+        cmd!(sh, "git commit -aem")
             .arg(format!("chore(release): v{}", version))
             .run()
             .context(err_context)?;
 
         // Tag release
-        if !flags.dry_run {
-            cmd!(sh, "git tag --annotate --message")
-                .arg(format!("Version {}", version))
-                .arg(format!("v{}", version))
-                .run()
-                .context(err_context)?;
-        }
+        cmd!(sh, "git tag --annotate --message")
+            .arg(format!("Version {}", version))
+            .arg(format!("v{}", version))
+            .run()
+            .context(err_context)?;
     }
 
-    // Push commit and tag
-    cmd!(sh, "git push {dry_run...} --atomic origin main v{version}")
-        .run()
-        .context(err_context)?;
+    let closure = || -> anyhow::Result<()> {
+        // Push commit and tag
+        cmd!(sh, "git push {dry_run...} --atomic origin main v{version}")
+            .run()
+            .context(err_context)?;
 
-    // Publish all the crates
-    for member in crate::WORKSPACE_MEMBERS.iter() {
-        if member.contains("plugin") {
-            continue;
+        // Publish all the crates
+        for member in crate::WORKSPACE_MEMBERS.iter() {
+            if member.contains("plugin") {
+                continue;
+            }
+
+            let _pd = sh.push_dir(project_dir.join(member));
+            cmd!(sh, "{cargo} publish {dry_run...}").run().context(err_context)?;
+            println!("Waiting for crates.io to catch up...");
+            std::thread::sleep(std::time::Duration::from_secs(15));
         }
+        Ok(())
+    };
 
-        let _pd = sh.push_dir(project_dir.join(member));
-        cmd!(sh, "{cargo} publish {dry_run...}").run().context(err_context)?;
-        println!("Waiting for crates.io to catch up...");
-        std::thread::sleep(std::time::Duration::from_secs(15));
+    // We run this in a closure so that a failure in any of the commands doesn't abort the whole
+    // program. When dry-running we need to undo the release commit first!
+    let result = closure();
+
+    if flags.dry_run {
+        cmd!(sh, "git reset --hard HEAD~1")
+            .run()
+            .context(err_context)?;
     }
 
-    Ok(())
+    result
 }
