@@ -23,7 +23,11 @@ use second_line::{
 use tip::utils::get_cached_tip_name;
 
 // for more of these, copy paste from: https://en.wikipedia.org/wiki/Box-drawing_character
-static ARROW_SEPARATOR: &str = "";
+pub struct Separator<'a> {
+    begin: &'a str,
+    end: &'a str,
+}
+
 static MORE_MSG: &str = " ... ";
 /// Shorthand for `Action::SwitchToMode(InputMode::Normal)`.
 const TO_NORMAL: Action = Action::SwitchToMode(InputMode::Normal);
@@ -240,47 +244,22 @@ impl ZellijPlugin for State {
     fn render(&mut self, rows: usize, cols: usize) {
         let supports_arrow_fonts = !self.mode_info.capabilities.arrow_fonts;
         let separator = if supports_arrow_fonts {
-            ARROW_SEPARATOR
+            Separator {
+                begin: "",
+                end: "",
+            }
         } else {
-            ""
+            Separator {
+                begin: "",
+                end: ""
+            }
         };
 
         let active_tab = self.tabs.iter().find(|t| t.active);
-        let first_line = first_line(&self.mode_info, active_tab, cols, separator);
+        let first_line = first_line(&self.mode_info, active_tab, cols, &separator);
         let second_line = self.second_line(cols);
 
-        let background = match self.mode_info.style.colors.theme_hue {
-            ThemeHue::Dark => self.mode_info.style.colors.black,
-            ThemeHue::Light => self.mode_info.style.colors.white,
-        };
-
-        // [48;5;238m is white background, [0K is so that it fills the rest of the line
-        // [m is background reset, [0K is so that it clears the rest of the line
-        match background {
-            PaletteColor::Rgb((r, g, b)) => {
-                if rows > 1 {
-                    println!("{}\u{1b}[48;2;{};{};{}m\u{1b}[0K", first_line, r, g, b);
-                } else {
-                    if self.mode_info.mode == InputMode::Normal {
-                        print!("{}\u{1b}[48;2;{};{};{}m\u{1b}[0K", first_line, r, g, b);
-                    } else {
-                        print!("\u{1b}[m{}\u{1b}[0K", second_line);
-                    }
-                }
-            },
-            PaletteColor::EightBit(color) => {
-                if rows > 1 {
-                    println!("{}\u{1b}[48;5;{}m\u{1b}[0K", first_line, color);
-                } else {
-                    if self.mode_info.mode == InputMode::Normal {
-                        print!("{}\u{1b}[48;5;{}m\u{1b}[0K", first_line, color);
-                    } else {
-                        print!("\u{1b}[m{}\u{1b}[0K", second_line);
-                    }
-                }
-            },
-        }
-
+        println!("{}\u{1b}[0K", first_line);
         if rows > 1 {
             print!("\u{1b}[m{}\u{1b}[0K", second_line);
         }
