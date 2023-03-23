@@ -4,7 +4,8 @@ use zellij_tile::prelude::*;
 
 use crate::color_elements;
 use crate::{
-    action_key, action_key_group, get_common_modifier, style_key_with_modifier, TO_NORMAL,
+    action_key, action_key_group, get_common_modifier, style_key_with_modifier, Separator,
+    TO_NORMAL,
 };
 use crate::{ColoredElements, LinePart};
 
@@ -93,7 +94,7 @@ impl KeyShortcut {
 fn long_mode_shortcut(
     key: &KeyShortcut,
     palette: ColoredElements,
-    separator: &str,
+    separator: &Separator,
     shared_super: bool,
     first_tile: bool,
 ) -> LinePart {
@@ -113,14 +114,14 @@ fn long_mode_shortcut(
     let start_separator = if !shared_super && first_tile {
         ""
     } else {
-        separator
+        separator.begin
     };
     let prefix_separator = colors.prefix_separator.paint(start_separator);
     let char_left_separator = colors.char_left_separator.paint(" <".to_string());
     let char_shortcut = colors.char_shortcut.paint(key_binding.to_string());
     let char_right_separator = colors.char_right_separator.paint("> ".to_string());
     let styled_text = colors.styled_text.paint(format!("{} ", key_hint));
-    let suffix_separator = colors.suffix_separator.paint(separator);
+    let suffix_separator = colors.suffix_separator.paint(separator.end);
     LinePart {
         part: ANSIStrings(&[
             prefix_separator,
@@ -137,7 +138,7 @@ fn long_mode_shortcut(
             + 2                              // "> "
             + key_hint.chars().count()       // Key hint (mode)
             + 1                              // " "
-            + separator.chars().count(), // Separator
+            + separator.end.chars().count(), // Separator
     }
 }
 
@@ -162,7 +163,7 @@ fn long_mode_shortcut(
 fn short_mode_shortcut(
     key: &KeyShortcut,
     palette: ColoredElements,
-    separator: &str,
+    separator: &Separator,
     shared_super: bool,
     first_tile: bool,
 ) -> LinePart {
@@ -181,18 +182,18 @@ fn short_mode_shortcut(
     let start_separator = if !shared_super && first_tile {
         ""
     } else {
-        separator
+        separator.begin
     };
     let prefix_separator = colors.prefix_separator.paint(start_separator);
     let char_shortcut = colors.char_shortcut.paint(format!(" {} ", key_binding));
-    let suffix_separator = colors.suffix_separator.paint(separator);
+    let suffix_separator = colors.suffix_separator.paint(separator.end);
     LinePart {
         part: ANSIStrings(&[prefix_separator, char_shortcut, suffix_separator]).to_string(),
-        len: separator.chars().count()      // Separator
+        len: separator.begin.chars().count()      // Separator
             + 1                             // " "
             + key_binding.chars().count()   // Key binding
             + 1                             // " "
-            + separator.chars().count(), // Separator
+            + separator.end.chars().count(), // Separator
     }
 }
 
@@ -200,7 +201,7 @@ fn key_indicators(
     max_len: usize,
     keys: &[KeyShortcut],
     palette: ColoredElements,
-    separator: &str,
+    separator: &Separator,
     mode_info: &ModeInfo,
 ) -> LinePart {
     // Print full-width hints
@@ -255,34 +256,35 @@ fn swap_layout_status(
     mode_info: &ModeInfo,
     colored_elements: ColoredElements,
     palette: &Palette,
-    separator: &str,
+    separator: &Separator,
 ) -> Option<LinePart> {
     match swap_layout_name {
         Some(swap_layout_name) => {
             let mut swap_layout_name = format!(" {} ", swap_layout_name);
             swap_layout_name.make_ascii_uppercase();
             let keycode = swap_layout_keycode(mode_info, palette);
-            let swap_layout_name_len = swap_layout_name.len() + 3; // 2 for the arrow separators, one for the screen end buffer
-                                                                   //
+            let swap_layout_name_len = swap_layout_name.len() + separator.begin.len() - 2; // FIXME(hartan):
+                                                                                           // Why
+                                                                                           // do I
+                                                                                           // need
+                                                                                           // -2
+                                                                                           // here??
+
             macro_rules! style_swap_layout_indicator {
                 ($style_name:ident) => {{
                     (
                         colored_elements
                             .$style_name
                             .prefix_separator
-                            .paint(separator),
+                            .paint(separator.begin),
                         colored_elements
                             .$style_name
                             .styled_text
                             .paint(&swap_layout_name),
-                        colored_elements
-                            .$style_name
-                            .suffix_separator
-                            .paint(separator),
                     )
                 }};
             }
-            let (prefix_separator, swap_layout_name, suffix_separator) =
+            let (prefix_separator, swap_layout_name) =
                 if mode_info.mode == InputMode::Locked {
                     style_swap_layout_indicator!(disabled)
                 } else if is_swap_layout_damaged {
@@ -291,8 +293,8 @@ fn swap_layout_status(
                     style_swap_layout_indicator!(selected)
                 };
             let swap_layout_indicator = format!(
-                "{}{}{}",
-                prefix_separator, swap_layout_name, suffix_separator
+                "{}{}",
+                prefix_separator, swap_layout_name
             );
             let (part, full_len) = if mode_info.mode == InputMode::Locked {
                 (
@@ -302,13 +304,11 @@ fn swap_layout_status(
             } else {
                 (
                     format!(
-                        "{}{}{}{}",
+                        "{}{}",
                         keycode,
-                        colored_elements.superkey_prefix.paint(" "),
                         swap_layout_indicator,
-                        colored_elements.superkey_prefix.paint(" ")
                     ),
-                    keycode.len + swap_layout_name_len + 1, // 1 is the space between
+                    keycode.len + swap_layout_name_len, // 1 is the space between
                 )
             };
             let short_len = swap_layout_name_len + 1; // 1 is the space between
@@ -380,7 +380,7 @@ pub fn mode_switch_keys(mode_info: &ModeInfo) -> Vec<Key> {
         .collect()
 }
 
-pub fn superkey(palette: ColoredElements, separator: &str, mode_info: &ModeInfo) -> LinePart {
+pub fn superkey(palette: ColoredElements, separator: &Separator, mode_info: &ModeInfo) -> LinePart {
     // Find a common modifier if any
     let prefix_text = match get_common_modifier(mode_switch_keys(mode_info).iter().collect()) {
         Some(text) => {
@@ -395,10 +395,10 @@ pub fn superkey(palette: ColoredElements, separator: &str, mode_info: &ModeInfo)
     };
 
     let prefix = palette.superkey_prefix.paint(&prefix_text);
-    let suffix_separator = palette.superkey_suffix_separator.paint(separator);
+    let suffix_separator = palette.superkey_suffix_separator.paint(separator.end);
     LinePart {
         part: ANSIStrings(&[prefix, suffix_separator]).to_string(),
-        len: prefix_text.chars().count() + separator.chars().count(),
+        len: prefix_text.chars().count() + separator.end.chars().count(),
     }
 }
 
@@ -453,7 +453,7 @@ pub fn first_line(
     help: &ModeInfo,
     tab_info: Option<&TabInfo>,
     max_len: usize,
-    separator: &str,
+    separator: &Separator,
 ) -> LinePart {
     let supports_arrow_fonts = !help.capabilities.arrow_fonts;
     let colored_elements = color_elements(help.style.colors, !supports_arrow_fonts);
@@ -552,7 +552,7 @@ pub fn first_line(
                 remaining_space -= swap_layout_status.len;
                 for _ in 0..remaining_space {
                     key_indicators.part.push_str(
-                        &ANSIStrings(&[colored_elements.superkey_prefix.paint(" ")]).to_string(),
+                        " ",
                     );
                     key_indicators.len += 1;
                 }
