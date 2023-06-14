@@ -5,3 +5,5 @@ xtask = "run --package xtask --"
 x = "xtask"
 q = "x run --quick-run"
 make = "xtask deprecated"
+[registries]
+ktra = { index = "https://gitlab.com/hartan/test-cargo-registry" }
