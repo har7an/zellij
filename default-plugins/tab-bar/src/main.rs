@@ -126,18 +126,6 @@ impl ZellijPlugin for State {
             .tab_line
             .iter()
             .fold(String::new(), |output, part| output + &part.part);
-
-        let background = match self.mode_info.style.colors.theme_hue {
-            ThemeHue::Dark => self.mode_info.style.colors.black,
-            ThemeHue::Light => self.mode_info.style.colors.white,
-        };
-        match background {
-            PaletteColor::Rgb((r, g, b)) => {
-                print!("{}\u{1b}[48;2;{};{};{}m\u{1b}[0K", output, r, g, b);
-            },
-            PaletteColor::EightBit(color) => {
-                print!("{}\u{1b}[48;5;{}m\u{1b}[0K", output, color);
-            },
-        }
+        print!("{}", output);
     }
 }
