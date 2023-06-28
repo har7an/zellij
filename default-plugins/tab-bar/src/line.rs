@@ -179,11 +179,7 @@ fn tab_line_prefix(session_name: Option<&str>, palette: Palette, cols: usize) ->
         ThemeHue::Dark => palette.white,
         ThemeHue::Light => palette.black,
     };
-    let bg_color = match palette.theme_hue {
-        ThemeHue::Dark => palette.black,
-        ThemeHue::Light => palette.white,
-    };
-    let prefix_styled_text = style!(text_color, bg_color).bold().paint(prefix_text);
+    let prefix_styled_text = style!(text_color).bold().paint(prefix_text);
     let mut parts = vec![LinePart {
         part: prefix_styled_text.to_string(),
         len: prefix_text_len,
@@ -196,7 +192,7 @@ fn tab_line_prefix(session_name: Option<&str>, palette: Palette, cols: usize) ->
             ThemeHue::Dark => palette.white,
             ThemeHue::Light => palette.black,
         };
-        let name_part_styled_text = style!(text_color, bg_color).bold().paint(name_part);
+        let name_part_styled_text = style!(text_color).bold().paint(name_part);
         if cols.saturating_sub(prefix_text_len) >= name_part_len {
             parts.push(LinePart {
                 part: name_part_styled_text.to_string(),
