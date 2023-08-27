@@ -21,7 +21,7 @@ url = "2.2.2"
 wasmer = "2.3.0"
 wasmer-wasi = "2.3.0"
 cassowary = "0.3.0"
-zellij-utils = { path = "../zellij-utils/", version = "0.38.0" }
+zellij-utils = { path = "../zellij-utils/", version = "0.38.0", registry = "alexandrie" }
 log = "0.4.17"
 typetag = "0.1.7"
 chrono = "0.4.19"

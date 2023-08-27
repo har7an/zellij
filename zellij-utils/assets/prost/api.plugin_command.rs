@@ -45,7 +45,7 @@ pub mod plugin_command {
         #[prost(bool, tag = "16")]
         ShowSelfPayload(bool),
         #[prost(message, tag = "17")]
-        SwitchToModePayload(super::SwitchToModePayload),
+        SwitchToModePayload(super::super::action::SwitchToModePayload),
         #[prost(string, tag = "18")]
         NewTabsWithLayoutPayload(::prost::alloc::string::String),
         #[prost(message, tag = "19")]
@@ -66,18 +66,18 @@ pub mod plugin_command {
         GoToTabNamePayload(::prost::alloc::string::String),
         #[prost(string, tag = "27")]
         FocusOrCreateTabPayload(::prost::alloc::string::String),
-        #[prost(int32, tag = "28")]
-        GoToTabPayload(i32),
+        #[prost(uint32, tag = "28")]
+        GoToTabPayload(u32),
         #[prost(string, tag = "29")]
         StartOrReloadPluginPayload(::prost::alloc::string::String),
-        #[prost(int32, tag = "30")]
-        CloseTerminalPanePayload(i32),
-        #[prost(int32, tag = "31")]
-        ClosePluginPanePayload(i32),
+        #[prost(uint32, tag = "30")]
+        CloseTerminalPanePayload(u32),
+        #[prost(uint32, tag = "31")]
+        ClosePluginPanePayload(u32),
         #[prost(message, tag = "32")]
-        FocusTerminalPanePayload(super::PaneIdAndShouldFloat),
+        FocusTerminalPanePayload(super::super::action::PaneIdAndShouldFloat),
         #[prost(message, tag = "33")]
-        FocusPluginPanePayload(super::PaneIdAndShouldFloat),
+        FocusPluginPanePayload(super::super::action::PaneIdAndShouldFloat),
         #[prost(message, tag = "34")]
         RenameTerminalPanePayload(super::IdAndNewName),
         #[prost(message, tag = "35")]
@@ -141,14 +141,14 @@ pub struct OpenCommandPanePayload {
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct SwitchTabToPayload {
-    #[prost(int32, tag = "1")]
-    pub tab_index: i32,
+    #[prost(uint32, tag = "1")]
+    pub tab_index: u32,
 }
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct SetTimeoutPayload {
-    #[prost(float, tag = "1")]
-    pub seconds: f32,
+    #[prost(double, tag = "1")]
+    pub seconds: f64,
 }
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -164,12 +164,6 @@ pub struct PluginMessagePayload {
 }
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
-pub struct SwitchToModePayload {
-    #[prost(message, optional, tag = "1")]
-    pub input_mode: ::core::option::Option<super::input_mode::InputModeMessage>,
-}
-#[allow(clippy::derive_partial_eq_without_eq)]
-#[derive(Clone, PartialEq, ::prost::Message)]
 pub struct ResizePayload {
     #[prost(message, optional, tag = "1")]
     pub resize: ::core::option::Option<super::resize::Resize>,
@@ -182,18 +176,10 @@ pub struct MovePayload {
 }
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
-pub struct PaneIdAndShouldFloat {
-    #[prost(int32, tag = "1")]
-    pub pane_id: i32,
-    #[prost(bool, tag = "2")]
-    pub should_float: bool,
-}
-#[allow(clippy::derive_partial_eq_without_eq)]
-#[derive(Clone, PartialEq, ::prost::Message)]
 pub struct IdAndNewName {
     /// pane id or tab index
-    #[prost(int32, tag = "1")]
-    pub id: i32,
+    #[prost(uint32, tag = "1")]
+    pub id: u32,
     #[prost(string, tag = "2")]
     pub new_name: ::prost::alloc::string::String,
 }
