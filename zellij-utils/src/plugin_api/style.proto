@@ -46,6 +46,7 @@ message RgbColorPayload {
 enum ColorType {
   Rgb = 0;
   EightBit = 1;
+  Transparent = 2;
 }
 
 enum ThemeHue {

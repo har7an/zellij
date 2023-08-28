@@ -173,6 +173,12 @@ impl TryFrom<PaletteColor> for ProtobufColor {
     type Error = &'static str;
     fn try_from(color: PaletteColor) -> Result<Self, &'static str> {
         match color {
+            PaletteColor::Transparent => {
+                Ok(ProtobufColor {
+                    color_type: ProtobufColorType::Transparent as i32,
+                    payload: None,
+                })
+            }
             PaletteColor::Rgb((red, green, blue)) => {
                 let red = red as u32;
                 let green = green as u32;

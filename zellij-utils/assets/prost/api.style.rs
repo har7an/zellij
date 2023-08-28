@@ -82,6 +82,7 @@ pub struct RgbColorPayload {
 pub enum ColorType {
     Rgb = 0,
     EightBit = 1,
+    Transparent = 2,
 }
 impl ColorType {
     /// String value of the enum field names used in the ProtoBuf definition.
@@ -92,6 +93,7 @@ impl ColorType {
         match self {
             ColorType::Rgb => "Rgb",
             ColorType::EightBit => "EightBit",
+            ColorType::Transparent => "Transparent",
         }
     }
     /// Creates an enum from field names used in the ProtoBuf definition.
@@ -99,6 +101,7 @@ impl ColorType {
         match value {
             "Rgb" => Some(Self::Rgb),
             "EightBit" => Some(Self::EightBit),
+            "Transparent" => Some(Self::Transparent),
             _ => None,
         }
     }
