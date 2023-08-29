@@ -23,9 +23,29 @@ use second_line::{
 use tip::utils::get_cached_tip_name;
 
 // for more of these, copy paste from: https://en.wikipedia.org/wiki/Box-drawing_character
-pub struct Separator<'a> {
-    begin: &'a str,
-    end: &'a str,
+#[derive(serde::Deserialize, serde::Serialize)]
+pub struct Separator {
+    begin: String,
+    end: String,
+}
+
+impl Separator {
+    pub fn begin<'a>(&'a self) -> &'a str {
+        self.begin.as_ref()
+    }
+
+    pub fn end<'a>(&'a self) -> &'a str {
+        self.end.as_ref()
+    }
+}
+
+impl Default for Separator {
+    fn default() -> Self {
+        Self {
+            begin: "".to_string(),
+            end: "".to_string(),
+        }
+    }
 }
 
 static MORE_MSG: &str = " ... ";

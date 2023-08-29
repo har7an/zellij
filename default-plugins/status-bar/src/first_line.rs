@@ -114,14 +114,14 @@ fn long_mode_shortcut(
     let start_separator = if !shared_super && first_tile {
         ""
     } else {
-        separator.begin
+        separator.begin()
     };
     let prefix_separator = colors.prefix_separator.paint(start_separator);
     let char_left_separator = colors.char_left_separator.paint(" <".to_string());
     let char_shortcut = colors.char_shortcut.paint(key_binding.to_string());
     let char_right_separator = colors.char_right_separator.paint("> ".to_string());
     let styled_text = colors.styled_text.paint(format!("{} ", key_hint));
-    let suffix_separator = colors.suffix_separator.paint(separator.end);
+    let suffix_separator = colors.suffix_separator.paint(separator.end());
     LinePart {
         part: ANSIStrings(&[
             prefix_separator,
@@ -182,11 +182,11 @@ fn short_mode_shortcut(
     let start_separator = if !shared_super && first_tile {
         ""
     } else {
-        separator.begin
+        separator.begin()
     };
     let prefix_separator = colors.prefix_separator.paint(start_separator);
     let char_shortcut = colors.char_shortcut.paint(format!(" {} ", key_binding));
-    let suffix_separator = colors.suffix_separator.paint(separator.end);
+    let suffix_separator = colors.suffix_separator.paint(separator.end());
     LinePart {
         part: ANSIStrings(&[prefix_separator, char_shortcut, suffix_separator]).to_string(),
         len: separator.begin.chars().count()      // Separator
@@ -276,7 +276,7 @@ fn swap_layout_status(
                         colored_elements
                             .$style_name
                             .prefix_separator
-                            .paint(separator.begin),
+                            .paint(separator.begin()),
                         colored_elements
                             .$style_name
                             .styled_text
@@ -395,7 +395,7 @@ pub fn superkey(palette: ColoredElements, separator: &Separator, mode_info: &Mod
     };
 
     let prefix = palette.superkey_prefix.paint(&prefix_text);
-    let suffix_separator = palette.superkey_suffix_separator.paint(separator.end);
+    let suffix_separator = palette.superkey_suffix_separator.paint(separator.end());
     LinePart {
         part: ANSIStrings(&[prefix, suffix_separator]).to_string(),
         len: prefix_text.chars().count() + separator.end.chars().count(),
