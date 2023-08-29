@@ -242,7 +242,7 @@ fn swap_layout_keycode(mode_info: &ModeInfo, palette: &Palette) -> LinePart {
         &[&[Action::PreviousSwapLayout], &[Action::NextSwapLayout]],
     );
     let prev_next_keys_indicator =
-        style_key_with_modifier(&prev_next_keys, palette, Some(palette.black));
+        style_key_with_modifier(&prev_next_keys, palette, None);
     let keycode = ANSIStrings(&prev_next_keys_indicator);
     let len = unstyled_len(&keycode);
     let part = keycode.to_string();
