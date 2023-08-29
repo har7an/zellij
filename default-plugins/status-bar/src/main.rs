@@ -59,6 +59,7 @@ struct State {
     mode_info: ModeInfo,
     text_copy_destination: Option<CopyDestination>,
     display_system_clipboard_failure: bool,
+    separator: Separator,
 }
 
 register_plugin!(State);
@@ -202,9 +203,15 @@ fn color_elements(palette: Palette, different_color_alternates: bool) -> Colored
 }
 
 impl ZellijPlugin for State {
-    fn load(&mut self, _configuration: BTreeMap<String, String>) {
+    fn load(&mut self, configuration: BTreeMap<String, String>) {
         // TODO: Should be able to choose whether to use the cache through config.
         self.tip_name = get_cached_tip_name();
+        self.separator = configuration.get("separator").and_then(|raw_separator| {
+            serde_json::from_str(raw_separator)
+                .with_context(|| format!("failed to deserialize separator from '{}'", raw_separator))
+                .to_stderr()
+                .ok()
+        }).unwrap_or_default();
         set_selectable(false);
         subscribe(&[
             EventType::ModeUpdate,
@@ -262,21 +269,8 @@ impl ZellijPlugin for State {
     }
 
     fn render(&mut self, rows: usize, cols: usize) {
-        let supports_arrow_fonts = !self.mode_info.capabilities.arrow_fonts;
-        let separator = if supports_arrow_fonts {
-            Separator {
-                begin: "",
-                end: "",
-            }
-        } else {
-            Separator {
-                begin: "",
-                end: ""
-            }
-        };
-
         let active_tab = self.tabs.iter().find(|t| t.active);
-        let first_line = first_line(&self.mode_info, active_tab, cols, &separator);
+        let first_line = first_line(&self.mode_info, active_tab, cols, &self.separator);
         let second_line = self.second_line(cols);
 
         println!("{}\u{1b}[0K", first_line);
