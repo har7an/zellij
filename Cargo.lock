@@ -3253,6 +3253,8 @@ version = "0.1.0"
 dependencies = [
  "ansi_term",
  "colored",
+ "serde",
+ "serde_json",
  "unicode-width",
  "zellij-tile",
  "zellij-tile-utils",
