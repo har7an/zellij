@@ -206,12 +206,17 @@ impl ZellijPlugin for State {
     fn load(&mut self, configuration: BTreeMap<String, String>) {
         // TODO: Should be able to choose whether to use the cache through config.
         self.tip_name = get_cached_tip_name();
-        self.separator = configuration.get("separator").and_then(|raw_separator| {
-            serde_json::from_str(raw_separator)
-                .with_context(|| format!("failed to deserialize separator from '{}'", raw_separator))
-                .to_stderr()
-                .ok()
-        }).unwrap_or_default();
+        self.separator = configuration
+            .get("separator")
+            .and_then(|raw_separator| {
+                serde_json::from_str(raw_separator)
+                    .with_context(|| {
+                        format!("failed to deserialize separator from '{}'", raw_separator)
+                    })
+                    .to_stderr()
+                    .ok()
+            })
+            .unwrap_or_default();
         set_selectable(false);
         subscribe(&[
             EventType::ModeUpdate,

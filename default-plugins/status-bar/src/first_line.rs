@@ -241,8 +241,7 @@ fn swap_layout_keycode(mode_info: &ModeInfo, palette: &Palette) -> LinePart {
         &mode_keybinds,
         &[&[Action::PreviousSwapLayout], &[Action::NextSwapLayout]],
     );
-    let prev_next_keys_indicator =
-        style_key_with_modifier(&prev_next_keys, palette, None);
+    let prev_next_keys_indicator = style_key_with_modifier(&prev_next_keys, palette, None);
     let keycode = ANSIStrings(&prev_next_keys_indicator);
     let len = unstyled_len(&keycode);
     let part = keycode.to_string();
@@ -284,18 +283,14 @@ fn swap_layout_status(
                     )
                 }};
             }
-            let (prefix_separator, swap_layout_name) =
-                if mode_info.mode == InputMode::Locked {
-                    style_swap_layout_indicator!(disabled)
-                } else if is_swap_layout_damaged {
-                    style_swap_layout_indicator!(unselected)
-                } else {
-                    style_swap_layout_indicator!(selected)
-                };
-            let swap_layout_indicator = format!(
-                "{}{}",
-                prefix_separator, swap_layout_name
-            );
+            let (prefix_separator, swap_layout_name) = if mode_info.mode == InputMode::Locked {
+                style_swap_layout_indicator!(disabled)
+            } else if is_swap_layout_damaged {
+                style_swap_layout_indicator!(unselected)
+            } else {
+                style_swap_layout_indicator!(selected)
+            };
+            let swap_layout_indicator = format!("{}{}", prefix_separator, swap_layout_name);
             let (part, full_len) = if mode_info.mode == InputMode::Locked {
                 (
                     format!("{}", swap_layout_indicator),
@@ -303,11 +298,7 @@ fn swap_layout_status(
                 )
             } else {
                 (
-                    format!(
-                        "{}{}",
-                        keycode,
-                        swap_layout_indicator,
-                    ),
+                    format!("{}{}", keycode, swap_layout_indicator,),
                     keycode.len + swap_layout_name_len, // 1 is the space between
                 )
             };
@@ -551,9 +542,7 @@ pub fn first_line(
             ) {
                 remaining_space -= swap_layout_status.len;
                 for _ in 0..remaining_space {
-                    key_indicators.part.push_str(
-                        " ",
-                    );
+                    key_indicators.part.push_str(" ");
                     key_indicators.len += 1;
                 }
                 key_indicators.append(&swap_layout_status);

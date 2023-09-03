@@ -1,10 +1,10 @@
 mod line;
 mod tab;
 
+use once_cell::sync::OnceCell;
 use std::cmp::{max, min};
 use std::collections::BTreeMap;
 use std::convert::TryInto;
-use std::fmt;
 
 use serde::{Deserialize, Serialize};
 use tab::get_tab_to_focus;
@@ -14,6 +14,7 @@ use zellij_tile_utils::style;
 use crate::line::tab_line;
 
 const ARROW_SEPARATOR: &str = ">";
+static SEGMENT: OnceCell<Segment> = OnceCell::new();
 
 #[derive(Debug, Default)]
 pub struct LinePart {
@@ -22,17 +23,18 @@ pub struct LinePart {
     tab_index: Option<usize>,
 }
 
-#[derive(Debug, Default, Serialize, Deserialize)]
+#[derive(Debug, Default, Serialize, Deserialize, Clone)]
 struct Style {
     #[serde(default)]
     foreground: Option<PaletteColor>,
     #[serde(default)]
     background: Option<PaletteColor>,
     #[serde(default)]
-    inverted: bool,
+    inverted: Option<bool>,
 }
 
 impl Style {
+    /// Paint the given `text` in the current style.
     pub fn paint(&self, text: String) -> ansi_term::ANSIGenericString<str> {
         let mut style = match (self.foreground, self.background) {
             (Some(fg), Some(bg)) => style!(fg, bg),
@@ -40,171 +42,233 @@ impl Style {
             (None, Some(bg)) => style!(PaletteColor::default(), bg),
             (None, None) => return ansi_term::Style::default().paint("".to_string()),
         };
-        if self.inverted {
+        if self.inverted.unwrap_or(false) {
             style = style.reverse();
         }
         style.paint(text)
     }
+
+    /// Merge this style with another, preferring the configured values in this style if present
+    /// and filling in with values from `other` when missing.
+    pub fn merge_with(&self, other: &Self) -> Self {
+        Style {
+            foreground: self.foreground.or(other.foreground).clone(),
+            background: self.background.or(other.background).clone(),
+            inverted: self.inverted.or(other.inverted).clone(),
+        }
+    }
+
+    pub fn inverted(mut self) -> Self {
+        self.inverted = self.inverted.map(|val| !val);
+        self
+    }
 }
 
-#[derive(Debug, Default, Serialize, Deserialize)]
-struct Separator {
+#[derive(Debug, Default, Serialize, Deserialize, Clone)]
+struct SegmentPart {
     text: String,
     #[serde(default)]
-    style: Style,
+    active_style: Option<Style>,
+    #[serde(default)]
+    inactive_style: Option<Style>,
 }
 
-impl Separator {
-    pub fn as_ansi(&self) -> ansi_term::ANSIGenericString<str> {
-        self.style.paint(self.text.clone())
-    }
-}
-
-impl fmt::Display for Separator {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.as_ansi())
-    }
-}
-
-// ribbon: {
-//   start: {
-//     text: ">",
-//     style {
-//       foreground: 255,
-//       background: 0,
-//       inverted: true,
-//     }
-//   }
-// }
-#[derive(Debug, Default, Serialize, Deserialize)]
-struct RibbonStyle {
-    start: Option<Separator>,
-    end: Option<Separator>,
-    style: Style,
-}
-
-impl RibbonStyle {
-    pub fn default_active(colors: &Palette) -> Self {
-        let foreground = match colors.theme_hue {
-            ThemeHue::Dark => Some(colors.black),
-            ThemeHue::Light => Some(colors.white),
-        };
-
+impl From<&str> for SegmentPart {
+    fn from(value: &str) -> Self {
         Self {
-            start: Some(Separator {
-                text: "".to_string(),
-                style: Style {
-                    inverted: false,
-                    background: Some(colors.green),
-                    foreground,
-                },
-            }),
-            end: Some(Separator {
-                text: "".to_string(),
-                style: Style {
-                    inverted: true,
-                    background: Some(colors.green),
-                    foreground,
-                },
-            }),
-            style: Style {
-                inverted: false,
-                background: Some(colors.green),
-                foreground,
-            },
-        }
-    }
-
-    pub fn default_inactive(colors: &Palette) -> Self {
-        let foreground = match colors.theme_hue {
-            ThemeHue::Dark => Some(colors.black),
-            ThemeHue::Light => Some(colors.white),
-        };
-
-        Self {
-            start: Some(Separator {
-                text: "".to_string(),
-                style: Style {
-                    inverted: false,
-                    background: Some(colors.fg),
-                    foreground,
-                },
-            }),
-            end: Some(Separator {
-                text: "".to_string(),
-                style: Style {
-                    inverted: true,
-                    background: Some(colors.fg),
-                    foreground,
-                },
-            }),
-            style: Style {
-                inverted: false,
-                background: Some(colors.fg),
-                foreground,
-            },
+            text: value.to_string(),
+            ..Default::default()
         }
     }
 }
 
-#[derive(Debug, Default, Serialize, Deserialize)]
-struct Ribbon {
-    active: RibbonStyle,
-    inactive: RibbonStyle,
-}
-
-impl Ribbon {
-    pub fn new_with_palette(colors: &Palette) -> Self {
-        Self {
-            active: RibbonStyle::default_active(colors),
-            inactive: RibbonStyle::default_inactive(colors),
+impl SegmentPart {
+    pub fn to_ansi(&self, is_active: bool) -> ansi_term::ANSIGenericString<str> {
+        match (is_active, &self.active_style, &self.inactive_style) {
+            (true, Some(style), _) | (false, _, Some(style)) => style.paint(self.text.clone()),
+            _ => ansi_term::Style::default().paint(self.text.clone()),
         }
     }
 
-    pub fn style(&self, tab: &TabInfo, is_renaming: bool, full_palette: Palette) -> LinePart {
-        let clients = tab.other_focused_clients.as_slice();
-        let tab_style = if tab.active {
-            &self.active
+    /// Get the currently active theme.
+    pub fn current_theme(&self, is_active: bool) -> Style {
+        if is_active {
+            self.active_style.clone()
         } else {
-            &self.inactive
+            self.inactive_style.clone()
+        }
+        .unwrap_or_default()
+    }
+
+    /// Merge this segment part with another, preferring the config values of `self` if present and
+    /// taking from `other` if not.
+    pub fn merge_with(&self, other: &Self) -> Self {
+        let text = if self.text.is_empty() {
+            &other.text
+        } else {
+            &self.text
         };
-        let space = tab_style.style.paint(" ".to_string());
+        let active_style = match (&self.active_style, &other.active_style) {
+            (Some(ref some), Some(ref other)) => Some(some.merge_with(other)),
+            (Some(style), None) | (None, Some(style)) => Some(style.clone()),
+            (None, None) => None,
+        };
+        let inactive_style = match (&self.inactive_style, &other.inactive_style) {
+            (Some(ref some), Some(ref other)) => Some(some.merge_with(other)),
+            (Some(style), None) | (None, Some(style)) => Some(style.clone()),
+            (None, None) => None,
+        };
+        Self {
+            text: text.clone(),
+            active_style,
+            inactive_style,
+        }
+    }
+
+    /// Merge this segments style with another. Merging follows the rules of [`Style::merge()`].
+    pub fn merge_with_style(mut self, styles: &AllStyles) -> Self {
+        Self {
+            text: self.text.clone(),
+            active_style: Some(
+                self.active_style
+                    .map(|current| current.merge_with(&styles.active))
+                    .unwrap_or(styles.active.clone()),
+            ),
+            inactive_style: Some(
+                self.inactive_style
+                    .map(|current| current.merge_with(&styles.inactive))
+                    .unwrap_or(styles.inactive.clone()),
+            ),
+        }
+    }
+}
+
+#[derive(Debug, Default, Serialize, Deserialize)]
+struct AllStyles {
+    active: Style,
+    inactive: Style,
+}
+
+impl AllStyles {
+    pub fn merge_with(&self, other: &Self) -> Self {
+        Self {
+            active: self.active.merge_with(&other.active),
+            inactive: self.inactive.merge_with(&other.inactive),
+        }
+    }
+
+    pub fn paint(&self, msg: String, is_active: bool) -> ansi_term::ANSIGenericString<str> {
+        if is_active {
+            self.active.paint(msg)
+        } else {
+            self.inactive.paint(msg)
+        }
+    }
+}
+
+#[derive(Debug, Default, Serialize, Deserialize)]
+struct SegmentConfig {
+    #[serde(default)]
+    global_style: Option<AllStyles>,
+    #[serde(default)]
+    start_separator: Option<SegmentPart>,
+    #[serde(default)]
+    tab_name: Option<SegmentPart>,
+    #[serde(default)]
+    clients_template: Option<SegmentPart>,
+    #[serde(default)]
+    sync_template: Option<SegmentPart>,
+    #[serde(default)]
+    end_separator: Option<SegmentPart>,
+}
+
+#[derive(Debug, Default)]
+struct Segment {
+    start_separator: SegmentPart,
+    tab_name: AllStyles,
+    clients_template: SegmentPart,
+    sync_template: SegmentPart,
+    end_separator: SegmentPart,
+}
+
+impl Segment {
+    pub fn from_config(config: SegmentConfig, default_colors: &Palette) -> Self {
+        let default_style = AllStyles {
+            active: config
+                .global_style
+                .as_ref()
+                .map(|style| style.active.clone())
+                .unwrap_or(Style {
+                    foreground: Some(default_colors.black.clone()),
+                    background: Some(default_colors.green.clone()),
+                    inverted: Some(false),
+                }),
+            inactive: config
+                .global_style
+                .map(|style| style.inactive)
+                .unwrap_or(Style {
+                    foreground: Some(default_colors.black.clone()),
+                    background: Some(default_colors.fg.clone()),
+                    inverted: Some(false),
+                }),
+        };
+        let tab_style = config
+            .tab_name
+            .unwrap_or_else(|| SegmentPart::default())
+            .merge_with_style(&default_style);
+
+        Self {
+            start_separator: config
+                .start_separator
+                .unwrap_or_else(|| "".into())
+                .merge_with_style(&default_style),
+            tab_name: AllStyles {
+                active: tab_style.active_style.unwrap(),
+                inactive: tab_style.inactive_style.unwrap(),
+            },
+            clients_template: config
+                .clients_template
+                .unwrap_or_else(|| " [{}]".into())
+                .merge_with_style(&default_style),
+            sync_template: config
+                .sync_template
+                .unwrap_or_else(|| " (S)".into())
+                .merge_with_style(&default_style),
+            end_separator: config
+                .end_separator
+                .unwrap_or_else(|| SegmentPart {
+                    text: "".to_string(),
+                    active_style: Some(Style::default().inverted()),
+                    inactive_style: Some(Style::default().inverted()),
+                })
+                .merge_with_style(&default_style),
+        }
+    }
+
+    pub fn style(&self, tab: &TabInfo, is_renaming: bool, default_palette: Palette) -> LinePart {
+        let clients = tab.other_focused_clients.as_slice();
+        let clients_theme = self.clients_template.current_theme(tab.active);
         let tab_name = if is_renaming {
             "Enter name...".to_string()
         } else {
             tab.name.clone()
         };
-        // TODO(hartan): "Enter Name..." when in rename mode and active tab
 
         let mut tab_parts: Vec<ansi_term::ANSIGenericString<str>> = Vec::with_capacity(20);
-
-        // Start separator
-        if let Some(sep) = &tab_style.start {
-            tab_parts.push(sep.as_ansi().clone());
-        }
-        // Tab name
-        tab_parts.push(space.clone());
-        tab_parts.push(tab_style.style.paint(tab_name));
-        tab_parts.push(space.clone());
-        // Other clients in this tab
+        tab_parts.push(self.start_separator.to_ansi(tab.active));
+        tab_parts.push(self.tab_name.paint(tab_name, tab.active));
         if !clients.is_empty() {
-            let (mut cursors, _) = tab::cursors(clients, full_palette);
-            tab_parts.push(tab_style.style.paint("[".to_string()));
-            tab_parts.append(&mut cursors);
-            tab_parts.push(tab_style.style.paint("]".to_string()));
+            if let Some((before, after)) = self.clients_template.text.split_once("{}") {
+                let (mut cursors, _) = tab::cursors(clients, default_palette);
+                tab_parts.push(clients_theme.paint(before.to_string()));
+                tab_parts.append(&mut cursors);
+                tab_parts.push(clients_theme.paint(after.to_string()));
+            }
         }
-        // Synced tab
-        if tab.is_sync_panes_active {
-            tab_parts.push(tab_style.style.paint(" (Sync)".to_string()));
-        }
-        // End separator
-        if let Some(ref sep) = tab_style.end {
-            tab_parts.push(sep.as_ansi().clone());
-        }
+        tab_parts.push(self.sync_template.to_ansi(tab.active));
+        tab_parts.push(self.end_separator.to_ansi(tab.active));
 
-        // Collect all pieces into one string
         let tab_text = ansi_term::ANSIGenericStrings(&tab_parts[..]);
-
         LinePart {
             part: tab_text.to_string(),
             len: ansi_term::unstyled_len(&tab_text),
@@ -235,7 +299,8 @@ struct State {
     active_tab_idx: usize,
     mode_info: ModeInfo,
     tab_line: Vec<LinePart>,
-    ribbon_theme: Ribbon,
+    config: BTreeMap<String, String>,
+    ribbon_theme: OnceCell<Segment>,
 }
 
 impl State {
@@ -254,36 +319,13 @@ impl State {
     }
 }
 
-//#[derive(serde::Deserialize, serde::Serialize)]
-//pub struct Separator {
-//    begin: String,
-//    end: String,
-//}
-//
-//impl Separator {
-//    pub fn begin<'a>(&'a self) -> &'a str {
-//        self.begin.as_ref()
-//    }
-//
-//    pub fn end<'a>(&'a self) -> &'a str {
-//        self.end.as_ref()
-//    }
-//}
-//
-//impl Default for Separator {
-//    fn default() -> Self {
-//        Self {
-//            begin: " ".to_string(),
-//            end: "".to_string(),
-//        }
-//    }
-//}
-
 register_plugin!(State);
 
 impl ZellijPlugin for State {
-    fn load(&mut self, _configuration: BTreeMap<String, String>) {
-        set_selectable(false);
+    fn load(&mut self, configuration: BTreeMap<String, String>) {
+        self.config = configuration;
+        set_selectable(true);
+        request_permission(&[PermissionType::ReadApplicationState]);
         subscribe(&[
             EventType::TabUpdate,
             EventType::ModeUpdate,
@@ -298,7 +340,17 @@ impl ZellijPlugin for State {
                 if self.mode_info != mode_info {
                     should_render = true;
                 }
-                self.ribbon_theme = Ribbon::new_with_palette(&mode_info.style.colors);
+                if SEGMENT.get().is_none() {
+                    let segment_config: SegmentConfig = self
+                        .config
+                        .get("segment")
+                        .and_then(|conf| serde_json::from_str(conf).ok())
+                        .unwrap_or_default();
+                    let segment =
+                        Segment::from_config(segment_config, &self.mode_info.style.colors);
+                    // TODO(hartan): Apparently this isn't being set, don't know why...
+                    SEGMENT.set(segment).unwrap();
+                }
                 self.mode_info = mode_info;
             },
             Event::TabUpdate(tabs) => {
@@ -351,10 +403,9 @@ impl ZellijPlugin for State {
                     is_renaming = true;
                 }
             }
-            let tab = self
-                .ribbon_theme
-                .style(t, is_renaming, self.mode_info.style.colors);
-            all_tabs.push(tab);
+            if let Some(ref tab) = SEGMENT.get() {
+                all_tabs.push(tab.style(t, is_renaming, self.mode_info.style.colors));
+            }
         }
         self.tab_line = tab_line(
             self.mode_info.session_name.as_deref(),
