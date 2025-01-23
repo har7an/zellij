@@ -685,7 +685,7 @@ impl Action {
             } => {
                 let current_dir = get_current_dir();
                 let run_plugin_or_alias = RunPluginOrAlias::from_url(
-                    &url.as_str(),
+                    url.as_str(),
                     &configuration.map(|c| c.inner().clone()),
                     None,
                     Some(current_dir.clone()),

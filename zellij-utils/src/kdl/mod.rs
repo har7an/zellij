@@ -1582,7 +1582,7 @@ impl TryFrom<(&KdlNode, &Options)> for Action {
                     .and_then(|c_m| kdl_child_bool_value_for_entry(c_m, "skip_plugin_cache"))
                     .unwrap_or(false);
                 let current_dir = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
-                let configuration = KdlLayoutParser::parse_plugin_user_configuration(&kdl_action)?;
+                let configuration = KdlLayoutParser::parse_plugin_user_configuration(kdl_action)?;
                 let initial_cwd = kdl_get_string_property_or_child_value!(kdl_action, "cwd")
                     .map(|s| PathBuf::from(s));
                 let run_plugin_or_alias = RunPluginOrAlias::from_url(
@@ -1630,7 +1630,7 @@ impl TryFrom<(&KdlNode, &Options)> for Action {
                     .and_then(|c_m| kdl_child_bool_value_for_entry(c_m, "skip_plugin_cache"))
                     .unwrap_or(false);
                 let current_dir = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
-                let configuration = KdlLayoutParser::parse_plugin_user_configuration(&kdl_action)?;
+                let configuration = KdlLayoutParser::parse_plugin_user_configuration(kdl_action)?;
                 let run_plugin_or_alias = RunPluginOrAlias::from_url(
                     &plugin_path,
                     &Some(configuration.inner().clone()),
@@ -1691,7 +1691,7 @@ impl TryFrom<(&KdlNode, &Options)> for Action {
                 let title = command_metadata
                     .and_then(|c_m| kdl_child_string_value_for_entry(c_m, "title"))
                     .map(|t| t.to_owned());
-                let configuration = KdlLayoutParser::parse_plugin_user_configuration(&kdl_action)?;
+                let configuration = KdlLayoutParser::parse_plugin_user_configuration(kdl_action)?;
                 let configuration = if configuration.inner().is_empty() {
                     None
                 } else {
@@ -2798,7 +2798,7 @@ impl Options {
             node
         };
         if let Some(session_name) = &self.session_name {
-            let mut node = create_node(&session_name);
+            let mut node = create_node(session_name);
             if add_comments {
                 node.set_leading(format!("{}\n", comment_text));
             }
@@ -3390,7 +3390,7 @@ impl Keybinds {
         let keys: Vec<KeyWithModifier> = keys_from_kdl!(global_unbind);
         for mode in keybinds_from_config.0.values_mut() {
             for key in &keys {
-                mode.remove(&key);
+                mode.remove(key);
             }
         }
         Ok(())
@@ -3421,7 +3421,7 @@ impl Keybinds {
     ) -> Result<Self, ConfigError> {
         let document: KdlDocument = stringified_keybindings.parse()?;
         if let Some(kdl_keybinds) = document.get("keybinds") {
-            Keybinds::from_kdl(&kdl_keybinds, base_keybinds, config_options)
+            Keybinds::from_kdl(kdl_keybinds, base_keybinds, config_options)
         } else {
             Err(ConfigError::new_kdl_error(
                 format!("Could not find keybinds node"),
@@ -3621,7 +3621,7 @@ impl Config {
         // TODO: handle cases where we have more than one of these blocks (eg. two "keybinds")
         // this should give an informative parsing error
         if let Some(kdl_keybinds) = kdl_config.get("keybinds") {
-            config.keybinds = Keybinds::from_kdl(&kdl_keybinds, config.keybinds, &config.options)?;
+            config.keybinds = Keybinds::from_kdl(kdl_keybinds, config.keybinds, &config.options)?;
         }
         if let Some(kdl_themes) = kdl_config.get("themes") {
             let sourced_from_external_file = false;
@@ -3637,11 +3637,11 @@ impl Config {
             config.background_plugins = load_plugins;
         }
         if let Some(kdl_ui_config) = kdl_config.get("ui") {
-            let config_ui = UiConfig::from_kdl(&kdl_ui_config)?;
+            let config_ui = UiConfig::from_kdl(kdl_ui_config)?;
             config.ui = config.ui.merge(config_ui);
         }
         if let Some(env_config) = kdl_config.get("env") {
-            let config_env = EnvironmentVariables::from_kdl(&env_config)?;
+            let config_env = EnvironmentVariables::from_kdl(env_config)?;
             config.env = config.env.merge(config_env);
         }
         Ok(config)
@@ -3689,7 +3689,7 @@ impl PluginAliases {
                     kdl_get_string_property_or_child_value!(alias_definition, "location")
                 {
                     let configuration =
-                        KdlLayoutParser::parse_plugin_user_configuration(&alias_definition)?;
+                        KdlLayoutParser::parse_plugin_user_configuration(alias_definition)?;
                     let initial_cwd =
                         kdl_get_string_property_or_child_value!(alias_definition, "cwd")
                             .map(|s| PathBuf::from(s));
@@ -3826,11 +3826,11 @@ fn load_plugins_from_kdl(
         for plugin_block in kdl_load_plugins {
             let url_node = plugin_block.name();
             let string_url = url_node.value();
-            let configuration = KdlLayoutParser::parse_plugin_user_configuration(&plugin_block)?;
+            let configuration = KdlLayoutParser::parse_plugin_user_configuration(plugin_block)?;
             let cwd = kdl_get_string_property_or_child_value!(&plugin_block, "cwd")
                 .map(|s| PathBuf::from(s));
             let run_plugin_or_alias = RunPluginOrAlias::from_url(
-                &string_url,
+                string_url,
                 &Some(configuration.inner().clone()),
                 None,
                 cwd.clone(),
@@ -4550,7 +4550,7 @@ pub fn parse_plugin_user_configuration(
     if let Some(user_config) = kdl_children_nodes!(plugin_block) {
         for user_configuration_entry in user_config {
             let config_entry_name = kdl_name!(user_configuration_entry);
-            if KdlLayoutParser::is_a_reserved_plugin_property(&config_entry_name) {
+            if KdlLayoutParser::is_a_reserved_plugin_property(config_entry_name) {
                 continue;
             }
             let config_entry_str_value = kdl_first_entry_as_string!(user_configuration_entry)

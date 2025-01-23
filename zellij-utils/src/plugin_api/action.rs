@@ -416,7 +416,7 @@ impl TryFrom<ProtobufAction> for Action {
                             .and_then(|p| PluginUserConfiguration::try_from(p).ok())
                             .unwrap_or_default();
                         let run_plugin_or_alias = RunPluginOrAlias::from_url(
-                            &payload.plugin_url.as_str(),
+                            payload.plugin_url.as_str(),
                             &Some(configuration.inner().clone()),
                             None,
                             None,
@@ -444,7 +444,7 @@ impl TryFrom<ProtobufAction> for Action {
                         .and_then(|p| PluginUserConfiguration::try_from(p).ok())
                         .unwrap_or_default();
                     let run_plugin_or_alias = RunPluginOrAlias::from_url(
-                        &payload.plugin_url.as_str(),
+                        payload.plugin_url.as_str(),
                         &Some(configuration.inner().clone()),
                         None,
                         None,
@@ -598,7 +598,7 @@ impl TryFrom<ProtobufAction> for Action {
                 match protobuf_action.optional_payload {
                     Some(OptionalPayload::StartOrReloadPluginPayload(payload)) => {
                         let run_plugin_or_alias =
-                            RunPluginOrAlias::from_url(&payload.as_str(), &None, None, None)
+                            RunPluginOrAlias::from_url(payload.as_str(), &None, None, None)
                                 .map_err(|_| "Malformed LaunchOrFocusPlugin payload")?;
 
                         Ok(Action::StartOrReloadPlugin(run_plugin_or_alias))

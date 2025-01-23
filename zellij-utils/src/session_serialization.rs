@@ -181,7 +181,7 @@ fn serialize_tiled_pane(
         &mut tiled_pane_node,
     );
 
-    serialize_tiled_layout_attributes(&layout, ignore_size, &mut tiled_pane_node);
+    serialize_tiled_layout_attributes(layout, ignore_size, &mut tiled_pane_node);
     let has_child_attributes = !layout.children.is_empty()
         || layout.external_children_index.is_some()
         || !args.is_empty()
@@ -204,7 +204,7 @@ fn serialize_tiled_pane(
                     .push(KdlNode::new("children"));
             } else {
                 let ignore_size = layout.children_are_stacked;
-                let child_pane_node = serialize_tiled_pane(&pane, ignore_size, pane_contents);
+                let child_pane_node = serialize_tiled_pane(pane, ignore_size, pane_contents);
                 tiled_pane_node_children.nodes_mut().push(child_pane_node);
             }
         }
@@ -487,7 +487,7 @@ fn serialize_new_tab_template(
     layout_children_node: &mut KdlDocument,
 ) {
     if let Some((tiled_panes, floating_panes)) = new_tab_template {
-        let tiled_panes = if &tiled_panes.children_split_direction != &SplitDirection::default() {
+        let tiled_panes = if tiled_panes.children_split_direction != SplitDirection::default() {
             vec![tiled_panes]
         } else {
             tiled_panes.children
@@ -523,7 +523,7 @@ fn serialize_swap_tiled_layouts(
 
         for (layout_constraint, tiled_panes_layout) in swap_tiled_layout.0 {
             let tiled_panes_layout =
-                if &tiled_panes_layout.children_split_direction != &SplitDirection::default() {
+                if tiled_panes_layout.children_split_direction != SplitDirection::default() {
                     vec![tiled_panes_layout]
                 } else {
                     tiled_panes_layout.children
@@ -658,7 +658,7 @@ fn serialize_floating_pane(
         &mut floating_pane_node,
     );
     serialize_start_suspended(&command, &mut floating_pane_node_children);
-    serialize_floating_layout_attributes(&layout, &mut floating_pane_node_children);
+    serialize_floating_layout_attributes(layout, &mut floating_pane_node_children);
     serialize_args(args, &mut floating_pane_node_children);
     serialize_plugin(plugin, plugin_config, &mut floating_pane_node_children);
     floating_pane_node.set_children(floating_pane_node_children);
@@ -706,7 +706,7 @@ fn get_tiled_panes_layout_from_panegeoms(
     geoms: &Vec<PaneLayoutManifest>,
     split_size: Option<SplitSize>,
 ) -> Option<TiledPaneLayout> {
-    let (children_split_direction, splits) = match get_splits(&geoms) {
+    let (children_split_direction, splits) = match get_splits(geoms) {
         Some(x) => x,
         None => {
             return Some(tiled_pane_layout_from_manifest(
@@ -744,7 +744,7 @@ fn get_tiled_panes_layout_from_panegeoms(
     }
     let new_split_sizes = get_split_sizes(&new_constraints);
     for (subgeoms, subsplit_size) in new_geoms.iter().zip(new_split_sizes) {
-        match get_tiled_panes_layout_from_panegeoms(&subgeoms, subsplit_size) {
+        match get_tiled_panes_layout_from_panegeoms(subgeoms, subsplit_size) {
             Some(child) => {
                 children.push(child);
             },
@@ -827,21 +827,21 @@ fn get_splits(geoms: &Vec<PaneLayoutManifest>) -> Option<(SplitDirection, Vec<us
     if geoms.len() == 1 {
         return None;
     }
-    let (x_lims, y_lims) = match (get_x_lims(&geoms), get_y_lims(&geoms)) {
+    let (x_lims, y_lims) = match (get_x_lims(geoms), get_y_lims(geoms)) {
         (Some(x_lims), Some(y_lims)) => (x_lims, y_lims),
         _ => return None,
     };
     let mut direction = SplitDirection::default();
     let mut splits = match direction {
-        SplitDirection::Vertical => get_col_splits(&geoms, &x_lims, &y_lims),
-        SplitDirection::Horizontal => get_row_splits(&geoms, &x_lims, &y_lims),
+        SplitDirection::Vertical => get_col_splits(geoms, &x_lims, &y_lims),
+        SplitDirection::Horizontal => get_row_splits(geoms, &x_lims, &y_lims),
     };
     if splits.len() <= 2 {
         // ie only the boundaries are present and no real split has been found
         direction = !direction;
         splits = match direction {
-            SplitDirection::Vertical => get_col_splits(&geoms, &x_lims, &y_lims),
-            SplitDirection::Horizontal => get_row_splits(&geoms, &x_lims, &y_lims),
+            SplitDirection::Vertical => get_col_splits(geoms, &x_lims, &y_lims),
+            SplitDirection::Horizontal => get_row_splits(geoms, &x_lims, &y_lims),
         };
     }
     if splits.len() <= 2 {
@@ -918,8 +918,8 @@ fn get_domain_constraint(
     (v_min, v_max): (usize, usize),
 ) -> Option<Constraint> {
     match split_direction {
-        SplitDirection::Horizontal => get_domain_row_constraint(&geoms, (v_min, v_max)),
-        SplitDirection::Vertical => get_domain_col_constraint(&geoms, (v_min, v_max)),
+        SplitDirection::Horizontal => get_domain_row_constraint(geoms, (v_min, v_max)),
+        SplitDirection::Vertical => get_domain_col_constraint(geoms, (v_min, v_max)),
     }
 }
 

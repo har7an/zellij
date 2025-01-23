@@ -372,7 +372,7 @@ impl KeyModifier {
     pub fn from_bytes(bytes: &[u8]) -> BTreeSet<KeyModifier> {
         let modifier_flags = str::from_utf8(bytes)
             .ok() // convert to string: (eg. "16")
-            .and_then(|s| u8::from_str_radix(&s, 10).ok()) // convert to u8: (eg. 16)
+            .and_then(|s| u8::from_str_radix(s, 10).ok()) // convert to u8: (eg. 16)
             .map(|s| s.saturating_sub(1)) // subtract 1: (eg. 15)
             .and_then(|b| ModifierFlags::from_bits(b)); // bitflags: (0b0000_1111: Shift, Alt, Control, Super)
         let mut key_modifiers = BTreeSet::new();
@@ -1223,10 +1223,10 @@ pub enum LayoutInfo {
 impl LayoutInfo {
     pub fn name(&self) -> &str {
         match self {
-            LayoutInfo::BuiltIn(name) => &name,
-            LayoutInfo::File(name) => &name,
-            LayoutInfo::Url(url) => &url,
-            LayoutInfo::Stringified(layout) => &layout,
+            LayoutInfo::BuiltIn(name) => name,
+            LayoutInfo::File(name) => name,
+            LayoutInfo::Url(url) => url,
+            LayoutInfo::Stringified(layout) => layout,
         }
     }
     pub fn is_builtin(&self) -> bool {

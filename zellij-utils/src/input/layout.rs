@@ -146,7 +146,7 @@ impl RunPluginOrAlias {
         alias_dict: Option<&PluginAliases>,
         cwd: Option<PathBuf>,
     ) -> Result<Self, String> {
-        match RunPluginLocation::parse(&url, cwd) {
+        match RunPluginLocation::parse(url, cwd) {
             Ok(location) => Ok(RunPluginOrAlias::RunPlugin(RunPlugin {
                 _allow_exec_host_cmd: false,
                 location,
@@ -158,7 +158,7 @@ impl RunPluginOrAlias {
             })),
             Err(PluginsConfigError::InvalidUrlScheme(_))
             | Err(PluginsConfigError::InvalidUrl(..)) => {
-                let mut plugin_alias = PluginAlias::new(&url, configuration, None);
+                let mut plugin_alias = PluginAlias::new(url, configuration, None);
                 if let Some(alias_dict) = alias_dict {
                     plugin_alias.run_plugin = alias_dict
                         .aliases
@@ -275,7 +275,7 @@ impl Run {
                 Some(Run::EditFile(file_to_edit, line_number, edit_cwd)),
             ) => match &base_run_command.cwd {
                 Some(cwd) => Some(Run::EditFile(
-                    cwd.join(&file_to_edit),
+                    cwd.join(file_to_edit),
                     *line_number,
                     Some(cwd.join(edit_cwd.clone().unwrap_or_default())),
                 )),
@@ -288,7 +288,7 @@ impl Run {
             (Some(Run::Cwd(cwd)), Some(Run::EditFile(file_to_edit, line_number, edit_cwd))) => {
                 let cwd = edit_cwd.clone().unwrap_or(cwd.clone());
                 Some(Run::EditFile(
-                    cwd.join(&file_to_edit),
+                    cwd.join(file_to_edit),
                     *line_number,
                     Some(cwd),
                 ))
@@ -324,7 +324,7 @@ impl Run {
                 *path = cwd.join(&path);
             },
             Run::Plugin(run_plugin_or_alias) => {
-                run_plugin_or_alias.add_initial_cwd(&cwd);
+                run_plugin_or_alias.add_initial_cwd(cwd);
             },
         }
     }
@@ -1176,7 +1176,7 @@ impl Layout {
             } else if b_name == default_layout_name {
                 return Ordering::Greater;
             } else {
-                a_name.cmp(&b_name)
+                a_name.cmp(b_name)
             }
         });
         available_layouts
@@ -1300,8 +1300,8 @@ impl Layout {
         stringified_layout: &str,
         config: Config,
     ) -> Result<(Layout, Config), ConfigError> {
-        let layout = Layout::from_kdl(&stringified_layout, None, None, None)?;
-        let config = Config::from_kdl(&stringified_layout, Some(config))?; // this merges the two config, with
+        let layout = Layout::from_kdl(stringified_layout, None, None, None)?;
+        let config = Config::from_kdl(stringified_layout, Some(config))?; // this merges the two config, with
         Ok((layout, config))
     }
     #[cfg(target_family = "wasm")]
@@ -1381,11 +1381,11 @@ impl Layout {
         layout_path: &Path,
     ) -> Result<(String, String, Option<(String, String)>), ConfigError> {
         // (path_to_layout as String, stringified_layout, Option<path_to_swap_layout as String, stringified_swap_layout>)
-        let mut layout_file = File::open(&layout_path)
-            .or_else(|_| File::open(&layout_path.with_extension("kdl")))
+        let mut layout_file = File::open(layout_path)
+            .or_else(|_| File::open(layout_path.with_extension("kdl")))
             .map_err(|e| ConfigError::IoPath(e, layout_path.into()))?;
 
-        let swap_layout_and_path = Layout::swap_layout_and_path(&layout_path);
+        let swap_layout_and_path = Layout::swap_layout_and_path(layout_path);
 
         let mut kdl_layout = String::new();
         layout_file
@@ -1576,15 +1576,15 @@ impl Layout {
     }
     pub fn add_cwd_to_layout(&mut self, cwd: &PathBuf) {
         for (_, tiled_pane_layout, floating_panes) in self.tabs.iter_mut() {
-            tiled_pane_layout.add_cwd_to_layout(&cwd);
+            tiled_pane_layout.add_cwd_to_layout(cwd);
             for floating_pane in floating_panes {
-                floating_pane.add_cwd_to_layout(&cwd);
+                floating_pane.add_cwd_to_layout(cwd);
             }
         }
         if let Some((tiled_pane_layout, floating_panes)) = self.template.as_mut() {
-            tiled_pane_layout.add_cwd_to_layout(&cwd);
+            tiled_pane_layout.add_cwd_to_layout(cwd);
             for floating_pane in floating_panes {
-                floating_pane.add_cwd_to_layout(&cwd);
+                floating_pane.add_cwd_to_layout(cwd);
             }
         }
     }

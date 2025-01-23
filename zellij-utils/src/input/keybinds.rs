@@ -46,7 +46,7 @@ impl Keybinds {
             .get(mode)
             .and_then(|mode_keybindings| {
                 if raw_bytes == &[10] {
-                    handle_ctrl_j(&mode_keybindings, &raw_bytes, key_is_kitty_protocol)
+                    handle_ctrl_j(mode_keybindings, &raw_bytes, key_is_kitty_protocol)
                 } else {
                     mode_keybindings.get(key_with_modifier).cloned()
                 }

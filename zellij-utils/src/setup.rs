@@ -381,7 +381,7 @@ impl Setup {
 
         // the attach CLI command can also have its own Options, we need to merge them if they
         // exist
-        let cli_config_options = merge_attach_command_options(cli_config_options, &cli_args);
+        let cli_config_options = merge_attach_command_options(cli_config_options, cli_args);
 
         let mut config_without_layout = config.clone();
         let (layout, mut config) =
@@ -455,7 +455,7 @@ impl Setup {
         }
 
         if let Some(layout) = &self.dump_layout {
-            dump_specified_layout(&layout)?;
+            dump_specified_layout(layout)?;
             std::process::exit(0);
         }
 
@@ -482,7 +482,7 @@ impl Setup {
             };
 
             println!("Dumping plugins to '{}'", dir.display());
-            dump_builtin_plugins(&dir)?;
+            dump_builtin_plugins(dir)?;
             std::process::exit(0);
         }
 

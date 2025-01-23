@@ -253,8 +253,8 @@ impl Config {
                 None
             })
             .and_then(|parsed_config| {
-                let backed_up_file_name = Config::backup_current_config(&opts)?;
-                let config_file_path = Config::config_file_path(&opts).ok_or_else(|| {
+                let backed_up_file_name = Config::backup_current_config(opts)?;
+                let config_file_path = Config::config_file_path(opts).ok_or_else(|| {
                     log::error!("Config file path not found");
                     None
                 })?;
@@ -343,8 +343,8 @@ impl Config {
         current_config_file_path: &PathBuf,
         backup_config_path: &PathBuf,
     ) -> bool {
-        let _ = std::fs::copy(current_config_file_path, &backup_config_path);
-        match std::fs::read_to_string(&backup_config_path) {
+        let _ = std::fs::copy(current_config_file_path, backup_config_path);
+        match std::fs::read_to_string(backup_config_path) {
             Ok(backed_up_config) => current_config == &backed_up_config,
             Err(e) => {
                 log::error!(
@@ -358,7 +358,7 @@ impl Config {
     }
     fn backup_current_config(opts: &CliArgs) -> Result<Option<PathBuf>, Option<PathBuf>> {
         // if we fail, try to return the PathBuf of the file we were not able to write to
-        if let Some(config_file_path) = Config::config_file_path(&opts) {
+        if let Some(config_file_path) = Config::config_file_path(opts) {
             match std::fs::read_to_string(&config_file_path) {
                 Ok(current_config) => {
                     let Some(backup_config_path) =
