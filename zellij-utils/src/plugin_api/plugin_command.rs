@@ -39,10 +39,10 @@ use std::collections::BTreeMap;
 use std::convert::TryFrom;
 use std::path::PathBuf;
 
-impl Into<FloatingPaneCoordinates> for ProtobufFloatingPaneCoordinates {
-    fn into(self) -> FloatingPaneCoordinates {
+impl From<ProtobufFloatingPaneCoordinates> for FloatingPaneCoordinates {
+    fn from(val: ProtobufFloatingPaneCoordinates) -> Self {
         FloatingPaneCoordinates {
-            x: self
+            x: val
                 .x
                 .and_then(|x| match ProtobufFixedOrPercent::from_i32(x.r#type) {
                     Some(ProtobufFixedOrPercent::Percent) => {
@@ -51,7 +51,7 @@ impl Into<FloatingPaneCoordinates> for ProtobufFloatingPaneCoordinates {
                     Some(ProtobufFixedOrPercent::Fixed) => Some(SplitSize::Fixed(x.value as usize)),
                     None => None,
                 }),
-            y: self
+            y: val
                 .y
                 .and_then(|y| match ProtobufFixedOrPercent::from_i32(y.r#type) {
                     Some(ProtobufFixedOrPercent::Percent) => {
@@ -60,7 +60,7 @@ impl Into<FloatingPaneCoordinates> for ProtobufFloatingPaneCoordinates {
                     Some(ProtobufFixedOrPercent::Fixed) => Some(SplitSize::Fixed(y.value as usize)),
                     None => None,
                 }),
-            width: self.width.and_then(|width| {
+            width: val.width.and_then(|width| {
                 match ProtobufFixedOrPercent::from_i32(width.r#type) {
                     Some(ProtobufFixedOrPercent::Percent) => {
                         Some(SplitSize::Percent(width.value as usize))
@@ -71,7 +71,7 @@ impl Into<FloatingPaneCoordinates> for ProtobufFloatingPaneCoordinates {
                     None => None,
                 }
             }),
-            height: self.height.and_then(|height| {
+            height: val.height.and_then(|height| {
                 match ProtobufFixedOrPercent::from_i32(height.r#type) {
                     Some(ProtobufFixedOrPercent::Percent) => {
                         Some(SplitSize::Percent(height.value as usize))
@@ -82,15 +82,15 @@ impl Into<FloatingPaneCoordinates> for ProtobufFloatingPaneCoordinates {
                     None => None,
                 }
             }),
-            pinned: self.pinned,
+            pinned: val.pinned,
         }
     }
 }
 
-impl Into<ProtobufFloatingPaneCoordinates> for FloatingPaneCoordinates {
-    fn into(self) -> ProtobufFloatingPaneCoordinates {
+impl From<FloatingPaneCoordinates> for ProtobufFloatingPaneCoordinates {
+    fn from(val: FloatingPaneCoordinates) -> Self {
         ProtobufFloatingPaneCoordinates {
-            x: match self.x {
+            x: match val.x {
                 Some(SplitSize::Percent(percent)) => Some(ProtobufFixedOrPercentValue {
                     r#type: ProtobufFixedOrPercent::Percent as i32,
                     value: percent as u32,
@@ -101,7 +101,7 @@ impl Into<ProtobufFloatingPaneCoordinates> for FloatingPaneCoordinates {
                 }),
                 None => None,
             },
-            y: match self.y {
+            y: match val.y {
                 Some(SplitSize::Percent(percent)) => Some(ProtobufFixedOrPercentValue {
                     r#type: ProtobufFixedOrPercent::Percent as i32,
                     value: percent as u32,
@@ -112,7 +112,7 @@ impl Into<ProtobufFloatingPaneCoordinates> for FloatingPaneCoordinates {
                 }),
                 None => None,
             },
-            width: match self.width {
+            width: match val.width {
                 Some(SplitSize::Percent(percent)) => Some(ProtobufFixedOrPercentValue {
                     r#type: ProtobufFixedOrPercent::Percent as i32,
                     value: percent as u32,
@@ -123,7 +123,7 @@ impl Into<ProtobufFloatingPaneCoordinates> for FloatingPaneCoordinates {
                 }),
                 None => None,
             },
-            height: match self.height {
+            height: match val.height {
                 Some(SplitSize::Percent(percent)) => Some(ProtobufFixedOrPercentValue {
                     r#type: ProtobufFixedOrPercent::Percent as i32,
                     value: percent as u32,
@@ -134,14 +134,14 @@ impl Into<ProtobufFloatingPaneCoordinates> for FloatingPaneCoordinates {
                 }),
                 None => None,
             },
-            pinned: self.pinned,
+            pinned: val.pinned,
         }
     }
 }
 
-impl Into<HttpVerb> for ProtobufHttpVerb {
-    fn into(self) -> HttpVerb {
-        match self {
+impl From<ProtobufHttpVerb> for HttpVerb {
+    fn from(val: ProtobufHttpVerb) -> Self {
+        match val {
             ProtobufHttpVerb::Get => HttpVerb::Get,
             ProtobufHttpVerb::Post => HttpVerb::Post,
             ProtobufHttpVerb::Put => HttpVerb::Put,
@@ -150,9 +150,9 @@ impl Into<HttpVerb> for ProtobufHttpVerb {
     }
 }
 
-impl Into<ProtobufHttpVerb> for HttpVerb {
-    fn into(self) -> ProtobufHttpVerb {
-        match self {
+impl From<HttpVerb> for ProtobufHttpVerb {
+    fn from(val: HttpVerb) -> Self {
+        match val {
             HttpVerb::Get => ProtobufHttpVerb::Get,
             HttpVerb::Post => ProtobufHttpVerb::Post,
             HttpVerb::Put => ProtobufHttpVerb::Put,

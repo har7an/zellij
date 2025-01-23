@@ -128,9 +128,9 @@ impl fmt::Display for KeyWithModifier {
 }
 
 #[cfg(not(target_family = "wasm"))]
-impl Into<Modifiers> for &KeyModifier {
-    fn into(self) -> Modifiers {
-        match self {
+impl From<&KeyModifier> for Modifiers {
+    fn from(val: &KeyModifier) -> Self {
+        match val {
             KeyModifier::Shift => Modifiers::SHIFT,
             KeyModifier::Alt => Modifiers::ALT,
             KeyModifier::Ctrl => Modifiers::CTRL,
