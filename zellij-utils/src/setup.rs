@@ -5,7 +5,7 @@ use crate::{
     cli::{CliArgs, Command, SessionCommand, Sessions},
     consts::{
         FEATURES, SYSTEM_DEFAULT_CONFIG_DIR, SYSTEM_DEFAULT_DATA_DIR_PREFIX, VERSION,
-        ZELLIJ_CACHE_DIR, ZELLIJ_DEFAULT_THEMES, ZELLIJ_PROJ_DIR,
+        ZELLIJ_CACHE_DIR, ZELLIJ_PROJ_DIR,
     },
     errors::prelude::*,
     home::*,
