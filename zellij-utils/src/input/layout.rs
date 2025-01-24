@@ -1760,7 +1760,7 @@ fn split_space(
     pane_positions.append(&mut pane_positions_with_children);
     if pane_positions.is_empty() {
         let layout = layout.clone();
-        pane_positions.push((layout, space_to_split.clone()));
+        pane_positions.push((layout, *space_to_split));
     }
     Ok(pane_positions)
 }

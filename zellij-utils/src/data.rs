@@ -468,7 +468,7 @@ impl KeyWithModifier {
     pub fn strip_common_modifiers(&self, common_modifiers: &Vec<KeyModifier>) -> Self {
         let common_modifiers: BTreeSet<&KeyModifier> = common_modifiers.into_iter().collect();
         KeyWithModifier {
-            bare_key: self.bare_key.clone(),
+            bare_key: self.bare_key,
             key_modifiers: self
                 .key_modifiers
                 .iter()
