@@ -170,7 +170,7 @@ impl RunPluginOrAlias {
                 Ok(RunPluginOrAlias::Alias(plugin_alias))
             },
             Err(e) => {
-                return Err(format!("Failed to parse plugin location {url}: {}", e));
+                Err(format!("Failed to parse plugin location {url}: {}", e))
             },
         }
     }

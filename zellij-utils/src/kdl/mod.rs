@@ -353,7 +353,7 @@ pub fn kdl_arguments_that_are_strings<'a>(
             Some(string_value) => args.push(string_value.to_string()),
             None => {
                 return Err(ConfigError::new_kdl_error(
-                    format!("Argument must be a string"),
+                    "Argument must be a string".to_string(),
                     kdl_entry.span().offset(),
                     kdl_entry.span().len(),
                 ));
@@ -374,7 +374,7 @@ pub fn kdl_arguments_that_are_digits<'a>(
             },
             None => {
                 return Err(ConfigError::new_kdl_error(
-                    format!("Argument must be a digit"),
+                    "Argument must be a digit".to_string(),
                     kdl_entry.span().offset(),
                     kdl_entry.span().len(),
                 ));
@@ -418,7 +418,7 @@ impl Action {
             "GoToTab" => {
                 let tab_index = *bytes.get(0).ok_or_else(|| {
                     ConfigError::new_kdl_error(
-                        format!("Missing tab index"),
+                        "Missing tab index".to_string(),
                         action_node.span().offset(),
                         action_node.span().len(),
                     )
@@ -606,7 +606,7 @@ impl Action {
                     };
                     node.push(format!("{} {}", resize, resize_direction));
                 } else {
-                    node.push(format!("{}", resize));
+                    node.push(resize.to_string());
                 }
                 Some(node)
             },
@@ -1140,17 +1140,17 @@ impl TryFrom<(&str, &KdlDocument)> for PaletteColor {
         if is_rgb() {
             let mut channels = kdl_entries_as_i64!(color);
             let r = channels.next().unwrap().ok_or(ConfigError::new_kdl_error(
-                format!("invalid rgb color"),
+                "invalid rgb color".to_string(),
                 color.span().offset(),
                 color.span().len(),
             ))? as u8;
             let g = channels.next().unwrap().ok_or(ConfigError::new_kdl_error(
-                format!("invalid rgb color"),
+                "invalid rgb color".to_string(),
                 color.span().offset(),
                 color.span().len(),
             ))? as u8;
             let b = channels.next().unwrap().ok_or(ConfigError::new_kdl_error(
-                format!("invalid rgb color"),
+                "invalid rgb color".to_string(),
                 color.span().offset(),
                 color.span().len(),
             ))? as u8;
@@ -1763,7 +1763,7 @@ impl TryFrom<(&KdlNode, &Options)> for Action {
             },
             "TogglePanePinned" => Ok(Action::TogglePanePinned),
             _ => Err(ConfigError::new_kdl_error(
-                format!("Unsupported action: {}", action_name).into(),
+                format!("Unsupported action: {}", action_name),
                 kdl_action.span().offset(),
                 kdl_action.span().len(),
             )),
@@ -3232,9 +3232,9 @@ impl EnvironmentVariables {
         for env_var in kdl_children_nodes_or_error!(kdl_env_variables, "empty env variable block") {
             let env_var_name = kdl_name!(env_var);
             let env_var_str_value =
-                kdl_first_entry_as_string!(env_var).map(|s| format!("{}", s.to_string()));
+                kdl_first_entry_as_string!(env_var).map(|s| s.to_string());
             let env_var_int_value =
-                kdl_first_entry_as_i64!(env_var).map(|s| format!("{}", s.to_string()));
+                kdl_first_entry_as_i64!(env_var).map(|s| format!("{}", s));
             let env_var_value =
                 env_var_str_value
                     .or(env_var_int_value)
@@ -3424,7 +3424,7 @@ impl Keybinds {
             Keybinds::from_kdl(kdl_keybinds, base_keybinds, config_options)
         } else {
             Err(ConfigError::new_kdl_error(
-                format!("Could not find keybinds node"),
+                "Could not find keybinds node".to_string(),
                 document.span().offset(),
                 document.span().len(),
             ))
@@ -3583,29 +3583,29 @@ impl KeyWithModifier {
 impl BareKey {
     pub fn to_kdl(&self) -> String {
         match self {
-            BareKey::PageDown => format!("PageDown"),
-            BareKey::PageUp => format!("PageUp"),
-            BareKey::Left => format!("left"),
-            BareKey::Down => format!("down"),
-            BareKey::Up => format!("up"),
-            BareKey::Right => format!("right"),
-            BareKey::Home => format!("home"),
-            BareKey::End => format!("end"),
-            BareKey::Backspace => format!("backspace"),
-            BareKey::Delete => format!("del"),
-            BareKey::Insert => format!("insert"),
+            BareKey::PageDown => "PageDown".to_string(),
+            BareKey::PageUp => "PageUp".to_string(),
+            BareKey::Left => "left".to_string(),
+            BareKey::Down => "down".to_string(),
+            BareKey::Up => "up".to_string(),
+            BareKey::Right => "right".to_string(),
+            BareKey::Home => "home".to_string(),
+            BareKey::End => "end".to_string(),
+            BareKey::Backspace => "backspace".to_string(),
+            BareKey::Delete => "del".to_string(),
+            BareKey::Insert => "insert".to_string(),
             BareKey::F(index) => format!("F{}", index),
-            BareKey::Char(' ') => format!("space"),
+            BareKey::Char(' ') => "space".to_string(),
             BareKey::Char(character) => format!("{}", character),
-            BareKey::Tab => format!("tab"),
-            BareKey::Esc => format!("esc"),
-            BareKey::Enter => format!("enter"),
-            BareKey::CapsLock => format!("capslock"),
-            BareKey::ScrollLock => format!("scrolllock"),
-            BareKey::NumLock => format!("numlock"),
-            BareKey::PrintScreen => format!("printscreen"),
-            BareKey::Pause => format!("pause"),
-            BareKey::Menu => format!("menu"),
+            BareKey::Tab => "tab".to_string(),
+            BareKey::Esc => "esc".to_string(),
+            BareKey::Enter => "enter".to_string(),
+            BareKey::CapsLock => "capslock".to_string(),
+            BareKey::ScrollLock => "scrolllock".to_string(),
+            BareKey::NumLock => "numlock".to_string(),
+            BareKey::PrintScreen => "printscreen".to_string(),
+            BareKey::Pause => "pause".to_string(),
+            BareKey::Menu => "menu".to_string(),
         }
     }
 }
@@ -4177,7 +4177,7 @@ impl SessionInfo {
                 LayoutInfo::Url(url) => (url.clone(), "url"),
                 LayoutInfo::Stringified(_stringified) => ("stringified-layout".to_owned(), "N/A"),
             };
-            let mut layout_node = KdlNode::new(format!("{}", layout_name));
+            let mut layout_node = KdlNode::new(layout_name.to_string());
             let layout_source = KdlEntry::new_prop("source", layout_source);
             layout_node.entries_mut().push(layout_source);
             available_layouts_children.nodes_mut().push(layout_node);
@@ -4554,14 +4554,14 @@ pub fn parse_plugin_user_configuration(
                 continue;
             }
             let config_entry_str_value = kdl_first_entry_as_string!(user_configuration_entry)
-                .map(|s| format!("{}", s.to_string()));
+                .map(|s| s.to_string());
             let config_entry_int_value = kdl_first_entry_as_i64!(user_configuration_entry)
-                .map(|s| format!("{}", s.to_string()));
+                .map(|s| format!("{}", s));
             let config_entry_bool_value = kdl_first_entry_as_bool!(user_configuration_entry)
-                .map(|s| format!("{}", s.to_string()));
+                .map(|s| format!("{}", s));
             let config_entry_children = user_configuration_entry
                 .children()
-                .map(|s| format!("{}", s.to_string().trim()));
+                .map(|s| s.to_string().trim().to_string());
             let config_entry_value = config_entry_str_value
                 .or(config_entry_int_value)
                 .or(config_entry_bool_value)

@@ -1224,12 +1224,10 @@ fn cannot_define_pane_template_names_as_keywords() {
 
 #[test]
 fn error_on_multiple_layout_nodes_in_file() {
-    let kdl_layout = format!(
-        "
+    let kdl_layout = "
         layout
         layout
-    "
-    );
+    ".to_string();
     let layout_error =
         Layout::from_kdl(&kdl_layout, Some("layout_file_name".into()), None, None).unwrap_err();
     assert_snapshot!(format!("{:?}", layout_error));
@@ -1237,15 +1235,13 @@ fn error_on_multiple_layout_nodes_in_file() {
 
 #[test]
 fn error_on_unknown_layout_node() {
-    let kdl_layout = format!(
-        "
-        layout {{
+    let kdl_layout = "
+        layout {
             pane
             i_am_not_a_proper_node
             pane
-        }}
-    "
-    );
+        }
+    ".to_string();
     let layout_error =
         Layout::from_kdl(&kdl_layout, Some("layout_file_name".into()), None, None).unwrap_err();
     assert_snapshot!(format!("{:?}", layout_error));
@@ -1253,13 +1249,11 @@ fn error_on_unknown_layout_node() {
 
 #[test]
 fn error_on_unknown_layout_pane_property() {
-    let kdl_layout = format!(
-        "
-        layout {{
+    let kdl_layout = "
+        layout {
             pane spit_size=1
-        }}
-    "
-    );
+        }
+    ".to_string();
     let layout_error =
         Layout::from_kdl(&kdl_layout, Some("layout_file_name".into()), None, None).unwrap_err();
     assert_snapshot!(format!("{:?}", layout_error));
@@ -1267,13 +1261,11 @@ fn error_on_unknown_layout_pane_property() {
 
 #[test]
 fn error_on_unknown_layout_pane_template_property() {
-    let kdl_layout = format!(
-        "
-        layout {{
+    let kdl_layout = "
+        layout {
             pane_template name=\"my_cool_template\" spit_size=1
-        }}
-    "
-    );
+        }
+    ".to_string();
     let layout_error =
         Layout::from_kdl(&kdl_layout, Some("layout_file_name".into()), None, None).unwrap_err();
     assert_snapshot!(format!("{:?}", layout_error));
@@ -1281,13 +1273,11 @@ fn error_on_unknown_layout_pane_template_property() {
 
 #[test]
 fn error_on_unknown_layout_tab_property() {
-    let kdl_layout = format!(
-        "
-        layout {{
+    let kdl_layout = "
+        layout {
             tab spit_size=1
-        }}
-    "
-    );
+        }
+    ".to_string();
     let layout_error =
         Layout::from_kdl(&kdl_layout, Some("layout_file_name".into()), None, None).unwrap_err();
     assert_snapshot!(format!("{:?}", layout_error));
@@ -1295,13 +1285,11 @@ fn error_on_unknown_layout_tab_property() {
 
 #[test]
 fn error_on_unknown_layout_tab_template_property() {
-    let kdl_layout = format!(
-        "
-        layout {{
+    let kdl_layout = "
+        layout {
             tab_template name=\"my_cool_template\" spit_size=1
-        }}
-    "
-    );
+        }
+    ".to_string();
     let layout_error =
         Layout::from_kdl(&kdl_layout, Some("layout_file_name".into()), None, None).unwrap_err();
     assert_snapshot!(format!("{:?}", layout_error));
@@ -1309,17 +1297,15 @@ fn error_on_unknown_layout_tab_template_property() {
 
 #[test]
 fn error_on_pane_templates_without_a_name() {
-    let kdl_layout = format!(
-        "
-        layout {{
-            pane_template {{
+    let kdl_layout = "
+        layout {
+            pane_template {
                 pane
                 children
                 pane
-            }}
-        }}
-    "
-    );
+            }
+        }
+    ".to_string();
     let layout_error =
         Layout::from_kdl(&kdl_layout, Some("layout_file_name".into()), None, None).unwrap_err();
     assert_snapshot!(format!("{:?}", layout_error));
@@ -1327,17 +1313,15 @@ fn error_on_pane_templates_without_a_name() {
 
 #[test]
 fn error_on_tab_templates_without_a_name() {
-    let kdl_layout = format!(
-        "
-        layout {{
-            tab_template {{
+    let kdl_layout = "
+        layout {
+            tab_template {
                 pane
                 children
                 pane
-            }}
-        }}
-    "
-    );
+            }
+        }
+    ".to_string();
     let layout_error =
         Layout::from_kdl(&kdl_layout, Some("layout_file_name".into()), None, None).unwrap_err();
     assert_snapshot!(format!("{:?}", layout_error));
@@ -1931,7 +1915,7 @@ fn can_load_swap_layouts_from_a_different_file() {
     let layout = Layout::from_kdl(
         kdl_layout,
         Some("layout_file_name".into()),
-        Some(("swap_layout_file_name".into(), kdl_swap_layout)),
+        Some(("swap_layout_file_name", kdl_swap_layout)),
         None,
     )
     .unwrap();

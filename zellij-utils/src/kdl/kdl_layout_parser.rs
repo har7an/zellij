@@ -166,13 +166,13 @@ impl<'a> KdlLayoutParser<'a> {
     ) -> Result<(), ConfigError> {
         if name.is_empty() {
             Err(ConfigError::new_layout_kdl_error(
-                format!("Template names cannot be empty"),
+                "Template names cannot be empty".to_string(),
                 kdl_node.span().offset(),
                 kdl_node.span().len(),
             ))
         } else if name.contains(')') || name.contains('(') {
             Err(ConfigError::new_layout_kdl_error(
-                format!("Template names cannot contain parantheses"),
+                "Template names cannot contain parantheses".to_string(),
                 kdl_node.span().offset(),
                 kdl_node.span().len(),
             ))
@@ -183,7 +183,7 @@ impl<'a> KdlLayoutParser<'a> {
             .unwrap_or(false)
         {
             Err(ConfigError::new_layout_kdl_error(
-                format!("Template names cannot start with numbers"),
+                "Template names cannot start with numbers".to_string(),
                 kdl_node.span().offset(),
                 kdl_node.span().len(),
             ))
@@ -201,7 +201,7 @@ impl<'a> KdlLayoutParser<'a> {
                 if kdl_name!(child) == "pane" || self.pane_templates.get(kdl_name!(child)).is_some()
                 {
                     return Err(ConfigError::new_layout_kdl_error(
-                        format!("Stacked panes cannot have children"),
+                        "Stacked panes cannot have children".to_string(),
                         child.span().offset(),
                         child.span().len(),
                     ));
@@ -362,14 +362,14 @@ impl<'a> KdlLayoutParser<'a> {
                     continue;
                 }
                 let config_entry_str_value = kdl_first_entry_as_string!(user_configuration_entry)
-                    .map(|s| format!("{}", s.to_string()));
+                    .map(|s| s.to_string());
                 let config_entry_int_value = kdl_first_entry_as_i64!(user_configuration_entry)
-                    .map(|s| format!("{}", s.to_string()));
+                    .map(|s| format!("{}", s));
                 let config_entry_bool_value = kdl_first_entry_as_bool!(user_configuration_entry)
-                    .map(|s| format!("{}", s.to_string()));
+                    .map(|s| format!("{}", s));
                 let config_entry_children = user_configuration_entry
                     .children()
-                    .map(|s| format!("{}", s.to_string().trim()));
+                    .map(|s| s.to_string().trim().to_string());
                 let config_entry_value = config_entry_str_value
                     .or(config_entry_int_value)
                     .or(config_entry_bool_value)
@@ -546,19 +546,19 @@ impl<'a> KdlLayoutParser<'a> {
         };
         if children_are_stacked && external_children_index.is_none() && children.is_empty() {
             return Err(ConfigError::new_layout_kdl_error(
-                format!("A stacked pane must have children nodes or possibly a \"children\" node if in a swap_layout"),
+                "A stacked pane must have children nodes or possibly a \"children\" node if in a swap_layout".to_string(),
                 kdl_node.span().offset(),
                 kdl_node.span().len(),
             ));
         } else if children_are_stacked && children_split_direction == SplitDirection::Vertical {
             return Err(ConfigError::new_layout_kdl_error(
-                format!("Stacked panes cannot be vertical"),
+                "Stacked panes cannot be vertical".to_string(),
                 kdl_node.span().offset(),
                 kdl_node.span().len(),
             ));
         } else if is_expanded_in_stack && !is_part_of_stack {
             return Err(ConfigError::new_layout_kdl_error(
-                format!("An expanded pane must be part of a stack"),
+                "An expanded pane must be part of a stack".to_string(),
                 kdl_node.span().offset(),
                 kdl_node.span().len(),
             ));
@@ -1682,7 +1682,7 @@ impl<'a> KdlLayoutParser<'a> {
                     let node_has_entries = !child.entries().is_empty();
                     if node_has_child_nodes || node_has_entries {
                         return Err(ConfigError::new_layout_kdl_error(
-                            format!("The `children` node must be bare. All properties should be places on the node consuming this template."),
+                            "The `children` node must be bare. All properties should be places on the node consuming this template.".to_string(),
                             child.span().offset(),
                             child.span().len(),
                         ));

@@ -553,7 +553,7 @@ impl Action {
                     let mut layout = Layout::from_str(&raw_layout, path_to_raw_layout, swap_layouts.as_ref().map(|(f, p)| (f.as_str(), p.as_str())), cwd).map_err(|e| {
                         let stringified_error = match e {
                             ConfigError::KdlError(kdl_error) => {
-                                let error = kdl_error.add_src(layout_path.as_path().as_os_str().to_string_lossy().to_string(), String::from(raw_layout));
+                                let error = kdl_error.add_src(layout_path.as_path().as_os_str().to_string_lossy().to_string(), raw_layout);
                                 let report: Report = error.into();
                                 format!("{:?}", report)
                             }
@@ -570,7 +570,7 @@ impl Action {
                                 };
                                 let kdl_error = KdlError {
                                     error_message,
-                                    src: Some(NamedSource::new(layout_path.as_path().as_os_str().to_string_lossy().to_string(), String::from(raw_layout))),
+                                    src: Some(NamedSource::new(layout_path.as_path().as_os_str().to_string_lossy(), raw_layout)),
                                     offset: Some(kdl_error.span.offset()),
                                     len: Some(kdl_error.span.len()),
                                     help_message: None,
