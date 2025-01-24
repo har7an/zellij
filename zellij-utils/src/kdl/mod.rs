@@ -3325,8 +3325,8 @@ impl Keybinds {
                     if modes_to_exclude.contains(&mode) {
                         continue;
                     }
-                    let mut input_mode_keybinds = keybinds_from_config.get_input_mode_mut(&mode);
-                    Keybinds::bind_keys_in_block(block, &mut input_mode_keybinds, config_options)?;
+                    let input_mode_keybinds = keybinds_from_config.get_input_mode_mut(&mode);
+                    Keybinds::bind_keys_in_block(block, input_mode_keybinds, config_options)?;
                 }
             }
             if kdl_name!(block) == "shared_among" {
@@ -3338,8 +3338,8 @@ impl Keybinds {
                     if !modes_to_include.contains(&mode) {
                         continue;
                     }
-                    let mut input_mode_keybinds = keybinds_from_config.get_input_mode_mut(&mode);
-                    Keybinds::bind_keys_in_block(block, &mut input_mode_keybinds, config_options)?;
+                    let input_mode_keybinds = keybinds_from_config.get_input_mode_mut(&mode);
+                    Keybinds::bind_keys_in_block(block, input_mode_keybinds, config_options)?;
                 }
             }
         }
@@ -3351,9 +3351,9 @@ impl Keybinds {
             {
                 continue;
             }
-            let mut input_mode_keybinds =
+            let input_mode_keybinds =
                 Keybinds::input_mode_keybindings(mode, &mut keybinds_from_config)?;
-            Keybinds::bind_keys_in_block(mode, &mut input_mode_keybinds, config_options)?;
+            Keybinds::bind_keys_in_block(mode, input_mode_keybinds, config_options)?;
         }
         if let Some(global_unbind) = kdl_keybinds.children().and_then(|c| c.get("unbind")) {
             Keybinds::unbind_keys_in_all_modes(global_unbind, &mut keybinds_from_config)?;
