@@ -1818,7 +1818,8 @@ mod tests {
 
     fn get_dim(dim_hm: &Value) -> Dimension {
         let constr_str = dim_hm["constraint"].to_string();
-        let dim = if constr_str.contains("Fixed") {
+        
+        if constr_str.contains("Fixed") {
             let value = &constr_str[7..constr_str.len() - 2];
             Dimension::fixed(value.parse().unwrap())
         } else if constr_str.contains("Percent") {
@@ -1828,7 +1829,6 @@ mod tests {
             dim
         } else {
             panic!("Constraint is nor a percent nor fixed");
-        };
-        dim
+        }
     }
 }
