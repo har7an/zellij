@@ -645,7 +645,7 @@ impl<'a> KdlLayoutParser<'a> {
             },
             None => (None, vec![]),
         };
-        if pane_parts.len() > 0 {
+        if !pane_parts.is_empty() {
             let child_panes_layout = TiledPaneLayout {
                 children_split_direction,
                 children: pane_parts,

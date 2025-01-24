@@ -416,7 +416,7 @@ impl Action {
             "TabNameInput" => Ok(Action::TabNameInput(bytes)),
             "SearchInput" => Ok(Action::SearchInput(bytes)),
             "GoToTab" => {
-                let tab_index = *bytes.get(0).ok_or_else(|| {
+                let tab_index = *bytes.first().ok_or_else(|| {
                     ConfigError::new_kdl_error(
                         "Missing tab index".to_string(),
                         action_node.span().offset(),
@@ -1386,7 +1386,7 @@ impl TryFrom<(&KdlNode, &Options)> for Action {
                 parse_kdl_action_u8_arguments!(action_name, action_arguments, kdl_action)
             },
             "NewTab" => {
-                let command_metadata = action_children.iter().next();
+                let command_metadata = action_children.first();
                 if command_metadata.is_none() {
                     return Ok(Action::NewTab(None, vec![], None, None, None, true));
                 }
@@ -1494,7 +1494,7 @@ impl TryFrom<(&KdlNode, &Options)> for Action {
                     ));
                 }
                 let command = args.remove(0);
-                let command_metadata = action_children.iter().next();
+                let command_metadata = action_children.first();
                 let cwd = command_metadata
                     .and_then(|c_m| kdl_child_string_value_for_entry(c_m, "cwd"))
                     .map(PathBuf::from);
@@ -1505,8 +1505,7 @@ impl TryFrom<(&KdlNode, &Options)> for Action {
                     .and_then(|c_m| kdl_child_string_value_for_entry(c_m, "direction"))
                     .and_then(|direction_string| Direction::from_str(direction_string).ok());
                 let hold_on_close = command_metadata
-                    .and_then(|c_m| kdl_child_bool_value_for_entry(c_m, "close_on_exit"))
-                    .and_then(|close_on_exit| Some(!close_on_exit))
+                    .and_then(|c_m| kdl_child_bool_value_for_entry(c_m, "close_on_exit")).map(|close_on_exit| !close_on_exit)
                     .unwrap_or(true);
                 let hold_on_start = command_metadata
                     .and_then(|c_m| kdl_child_bool_value_for_entry(c_m, "start_suspended"))
@@ -1568,7 +1567,7 @@ impl TryFrom<(&KdlNode, &Options)> for Action {
                 }
                 let plugin_path = args.remove(0);
 
-                let command_metadata = action_children.iter().next();
+                let command_metadata = action_children.first();
                 let should_float = command_metadata
                     .and_then(|c_m| kdl_child_bool_value_for_entry(c_m, "floating"))
                     .unwrap_or(false);
@@ -1619,7 +1618,7 @@ impl TryFrom<(&KdlNode, &Options)> for Action {
                 }
                 let plugin_path = args.remove(0);
 
-                let command_metadata = action_children.iter().next();
+                let command_metadata = action_children.first();
                 let should_float = command_metadata
                     .and_then(|c_m| kdl_child_bool_value_for_entry(c_m, "floating"))
                     .unwrap_or(false);
@@ -1672,7 +1671,7 @@ impl TryFrom<(&KdlNode, &Options)> for Action {
                     Some(args.remove(0))
                 };
 
-                let command_metadata = action_children.iter().next();
+                let command_metadata = action_children.first();
                 let launch_new = command_metadata
                     .and_then(|c_m| kdl_child_bool_value_for_entry(c_m, "launch_new"))
                     .unwrap_or(false);
@@ -1731,7 +1730,7 @@ impl TryFrom<(&KdlNode, &Options)> for Action {
                     Some(args.remove(0) as u32)
                 };
 
-                let command_metadata = action_children.iter().next();
+                let command_metadata = action_children.first();
                 let launch_new = false;
                 let skip_cache = false;
                 let name = command_metadata
@@ -3438,9 +3437,7 @@ impl Keybinds {
         let mut minimized: BTreeMap<BTreeSet<InputMode>, BTreeMap<KeyWithModifier, Vec<Action>>> =
             BTreeMap::new();
         let mut flattened: Vec<BTreeMap<KeyWithModifier, Vec<Action>>> = self
-            .0
-            .iter()
-            .map(|(_input_mode, keybind)| keybind.clone().into_iter().collect())
+            .0.values().map(|keybind| keybind.clone().into_iter().collect())
             .collect();
         for keybind in flattened.drain(..) {
             for (key, actions) in keybind.into_iter() {
@@ -3452,7 +3449,7 @@ impl Keybinds {
                 }
                 minimized
                     .entry(appears_in_modes)
-                    .or_insert_with(Default::default)
+                    .or_default()
                     .insert(key, actions);
             }
         }
@@ -4330,7 +4327,7 @@ impl PaneManifest {
                     if let Ok((tab_position, pane_info)) = PaneInfo::decode_from_kdl(pane_document)
                     {
                         let panes_in_tab_position =
-                            panes.entry(tab_position).or_insert_with(Vec::new);
+                            panes.entry(tab_position).or_default();
                         panes_in_tab_position.push(pane_info);
                     }
                 }

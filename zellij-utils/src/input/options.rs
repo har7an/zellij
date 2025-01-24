@@ -190,11 +190,7 @@ impl FromStr for Clipboard {
 
 impl Options {
     pub fn from_yaml(from_yaml: Option<Options>) -> Options {
-        if let Some(opts) = from_yaml {
-            opts
-        } else {
-            Options::default()
-        }
+        from_yaml.unwrap_or_default()
     }
     /// Merges two [`Options`] structs, a `Some` in `other`
     /// will supersede a `Some` in `self`

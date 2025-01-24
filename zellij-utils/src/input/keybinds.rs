@@ -65,7 +65,7 @@ impl Keybinds {
         &mut self,
         input_mode: &InputMode,
     ) -> &mut HashMap<KeyWithModifier, Vec<Action>> {
-        self.0.entry(*input_mode).or_insert_with(HashMap::new)
+        self.0.entry(*input_mode).or_default()
     }
     pub fn default_action_for_mode(
         &self,

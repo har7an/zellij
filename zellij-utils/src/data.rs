@@ -70,7 +70,7 @@ impl PartialEq for KeyWithModifier {
     fn eq(&self, other: &Self) -> bool {
         match (self.bare_key, other.bare_key) {
             (BareKey::Char(self_char), BareKey::Char(other_char))
-                if self_char.to_ascii_lowercase() == other_char.to_ascii_lowercase() =>
+                if self_char.eq_ignore_ascii_case(&other_char) =>
             {
                 let mut self_cloned = self.clone();
                 let mut other_cloned = other.clone();
@@ -723,10 +723,7 @@ impl ResizeStrategy {
             Resize::Increase => Resize::Decrease,
             Resize::Decrease => Resize::Increase,
         };
-        let direction = match self.direction {
-            Some(direction) => Some(direction.invert()),
-            None => None,
-        };
+        let direction = self.direction.map(|direction| direction.invert());
 
         ResizeStrategy::new(resize, direction)
     }
@@ -791,11 +788,11 @@ impl ResizeStrategy {
     }
 
     pub fn move_all_borders_out(&self) -> bool {
-        (self.resize == Resize::Increase) && (self.direction == None)
+        (self.resize == Resize::Increase) && self.direction.is_none()
     }
 
     pub fn move_all_borders_in(&self) -> bool {
-        (self.resize == Resize::Decrease) && (self.direction == None)
+        (self.resize == Resize::Decrease) && self.direction.is_none()
     }
 }
 

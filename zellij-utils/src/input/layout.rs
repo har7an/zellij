@@ -727,7 +727,7 @@ impl PercentOrFixed {
 impl FromStr for PercentOrFixed {
     type Err = Box<dyn std::error::Error>;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        if s.chars().last() == Some('%') {
+        if s.ends_with('%') {
             let char_count = s.chars().count();
             let percent_size = usize::from_str_radix(&s[..char_count.saturating_sub(1)], 10)?;
             if percent_size <= 100 {
@@ -1057,7 +1057,7 @@ impl TiledPaneLayout {
                     .filter(|c| c.children.is_empty())
                     .count();
             for child in self.children.iter_mut() {
-                if remaining_panes > 1 && child.children.len() > 0 {
+                if remaining_panes > 1 && !child.children.is_empty() {
                     remaining_panes =
                         remaining_panes.saturating_sub(child.truncate(remaining_panes));
                 } else {
@@ -1065,7 +1065,7 @@ impl TiledPaneLayout {
                 }
             }
         }
-        if self.children.len() > 0 {
+        if !self.children.is_empty() {
             self.children.len()
         } else {
             1 // just me
@@ -1848,7 +1848,7 @@ impl FromStr for SplitDirection {
 impl FromStr for SplitSize {
     type Err = Box<dyn std::error::Error>;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        if s.chars().last() == Some('%') {
+        if s.ends_with('%') {
             let char_count = s.chars().count();
             let percent_size = usize::from_str_radix(&s[..char_count.saturating_sub(1)], 10)?;
             if percent_size > 0 && percent_size <= 100 {
