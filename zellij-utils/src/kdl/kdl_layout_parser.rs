@@ -689,7 +689,7 @@ impl<'a> KdlLayoutParser<'a> {
                 }
             }
         }
-        return Ok(None);
+        Ok(None)
     }
     fn parse_pane_node_with_template(
         &self,
@@ -1299,7 +1299,7 @@ impl<'a> KdlLayoutParser<'a> {
                 }
             }
         }
-        return false;
+        false
     }
     fn has_child_panes_tabs_or_templates(&self, kdl_node: &KdlNode) -> bool {
         if let Some(children) = kdl_children_nodes!(kdl_node) {

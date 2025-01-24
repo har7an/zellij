@@ -127,7 +127,7 @@ fn serialize_tab(
             Some(serialized_tab)
         },
         None => {
-            return None;
+            None
         },
     }
 }

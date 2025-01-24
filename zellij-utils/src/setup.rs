@@ -258,7 +258,7 @@ pub fn dump_specified_layout(layout: &str) -> std::io::Result<()> {
                 },
                 _ => {
                     log::error!("No layout named {custom} found");
-                    return Ok(());
+                    Ok(())
                 },
             }
         },

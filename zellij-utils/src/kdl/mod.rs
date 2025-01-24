@@ -442,7 +442,7 @@ impl Action {
             "SwitchToMode" => match InputMode::from_str(string.as_str()) {
                 Ok(input_mode) => Ok(Action::SwitchToMode(input_mode)),
                 Err(_e) => {
-                    return Err(ConfigError::new_kdl_error(
+                    Err(ConfigError::new_kdl_error(
                         format!("Unknown InputMode '{}'", string),
                         action_node.span().offset(),
                         action_node.span().len(),
@@ -513,7 +513,7 @@ impl Action {
             },
             "MovePane" => {
                 if string.is_empty() {
-                    return Ok(Action::MovePane(None));
+                    Ok(Action::MovePane(None))
                 } else {
                     let direction = Direction::from_str(string.as_str()).map_err(|_| {
                         ConfigError::new_kdl_error(
@@ -530,7 +530,7 @@ impl Action {
             "DumpLayout" => Ok(Action::DumpLayout),
             "NewPane" => {
                 if string.is_empty() {
-                    return Ok(Action::NewPane(None, None, false));
+                    Ok(Action::NewPane(None, None, false))
                 } else {
                     let direction = Direction::from_str(string.as_str()).map_err(|_| {
                         ConfigError::new_kdl_error(
@@ -1439,11 +1439,11 @@ impl TryFrom<(&KdlNode, &Options)> for Action {
 
                 let mut tabs = layout.tabs();
                 if tabs.len() > 1 {
-                    return Err(ConfigError::new_kdl_error(
+                    Err(ConfigError::new_kdl_error(
                         "Tab layout cannot itself have tabs".to_string(),
                         kdl_action.span().offset(),
                         kdl_action.span().len(),
-                    ));
+                    ))
                 } else if !tabs.is_empty() {
                     let (tab_name, layout, floating_panes_layout) = tabs.drain(..).next().unwrap();
                     let name = tab_name.or(name);

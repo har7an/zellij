@@ -1174,7 +1174,7 @@ impl Layout {
             let a_name = a.name();
             let b_name = b.name();
             if a_name == default_layout_name {
-                return Ordering::Less;
+                Ordering::Less
             } else if b_name == default_layout_name {
                 return Ordering::Greater;
             } else {
