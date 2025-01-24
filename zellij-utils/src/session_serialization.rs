@@ -254,7 +254,7 @@ pub fn extract_edit_and_line_number(layout_run: &Option<Run>) -> (Option<String>
     match &layout_run {
         // TODO: line number in layouts?
         Some(Run::EditFile(path, line_number, _cwd)) => {
-            (Some(path.display().to_string()), line_number.clone())
+            (Some(path.display().to_string()), *line_number)
         },
         _ => (None, None),
     }
