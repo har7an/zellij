@@ -392,11 +392,8 @@ impl Run {
         }
     }
     pub fn populate_run_plugin_if_needed(&mut self, alias_dict: &PluginAliases) {
-        match self {
-            Run::Plugin(run_plugin_alias) => {
-                run_plugin_alias.populate_run_plugin_if_needed(alias_dict)
-            },
-            _ => {},
+        if let Run::Plugin(run_plugin_alias) = self {
+            run_plugin_alias.populate_run_plugin_if_needed(alias_dict)
         }
     }
 }
@@ -994,10 +991,7 @@ impl TiledPaneLayout {
         }
     }
     pub fn populate_plugin_aliases_in_layout(&mut self, plugin_aliases: &PluginAliases) {
-        match self.run.as_mut() {
-            Some(run) => run.populate_run_plugin_if_needed(plugin_aliases),
-            _ => {},
-        }
+        if let Some(run) = self.run.as_mut() { run.populate_run_plugin_if_needed(plugin_aliases) }
         for child in self.children.iter_mut() {
             child.populate_plugin_aliases_in_layout(plugin_aliases);
         }

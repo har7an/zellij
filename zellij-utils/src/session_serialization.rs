@@ -453,13 +453,10 @@ fn serialize_floating_layout_attributes(
         },
         None => {},
     }
-    match layout.pinned {
-        Some(true) => {
-            let mut node = KdlNode::new("pinned");
-            node.entries_mut().push(KdlEntry::new(KdlValue::Bool(true)));
-            pane_node_children.nodes_mut().push(node);
-        },
-        _ => {},
+    if let Some(true) = layout.pinned {
+        let mut node = KdlNode::new("pinned");
+        node.entries_mut().push(KdlEntry::new(KdlValue::Bool(true)));
+        pane_node_children.nodes_mut().push(node);
     }
 }
 
