@@ -784,7 +784,7 @@ impl TryFrom<ProtobufPluginCommand> for PluginCommand {
                         tab_position: payload.tab_position.map(|p| p as usize),
                         pane_id,
                         layout: payload.layout.and_then(|l| l.try_into().ok()),
-                        cwd: payload.cwd.map(|c| PathBuf::from(c)),
+                        cwd: payload.cwd.map(PathBuf::from),
                     }))
                 },
                 _ => Err("Mismatched payload for SwitchSession"),
