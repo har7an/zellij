@@ -397,7 +397,7 @@ impl TryFrom<ProtobufPluginCommand> for PluginCommand {
             },
             Some(CommandName::SwitchTabTo) => match protobuf_plugin_command.payload {
                 Some(Payload::SwitchTabToPayload(switch_to_tab_payload)) => Ok(
-                    PluginCommand::SwitchTabTo(switch_to_tab_payload.tab_index as u32),
+                    PluginCommand::SwitchTabTo(switch_to_tab_payload.tab_index),
                 ),
                 _ => Err("Mismatched payload for SwitchToTab"),
             },
@@ -689,7 +689,7 @@ impl TryFrom<ProtobufPluginCommand> for PluginCommand {
             },
             Some(CommandName::GoToTab) => match protobuf_plugin_command.payload {
                 Some(Payload::GoToTabPayload(tab_index)) => {
-                    Ok(PluginCommand::GoToTab(tab_index as u32))
+                    Ok(PluginCommand::GoToTab(tab_index))
                 },
                 _ => Err("Mismatched payload for GoToTab"),
             },
@@ -701,19 +701,19 @@ impl TryFrom<ProtobufPluginCommand> for PluginCommand {
             },
             Some(CommandName::CloseTerminalPane) => match protobuf_plugin_command.payload {
                 Some(Payload::CloseTerminalPanePayload(pane_id)) => {
-                    Ok(PluginCommand::CloseTerminalPane(pane_id as u32))
+                    Ok(PluginCommand::CloseTerminalPane(pane_id))
                 },
                 _ => Err("Mismatched payload for CloseTerminalPane"),
             },
             Some(CommandName::ClosePluginPane) => match protobuf_plugin_command.payload {
                 Some(Payload::ClosePluginPanePayload(pane_id)) => {
-                    Ok(PluginCommand::ClosePluginPane(pane_id as u32))
+                    Ok(PluginCommand::ClosePluginPane(pane_id))
                 },
                 _ => Err("Mismatched payload for ClosePluginPane"),
             },
             Some(CommandName::FocusTerminalPane) => match protobuf_plugin_command.payload {
                 Some(Payload::FocusTerminalPanePayload(payload)) => {
-                    let pane_id = payload.pane_id as u32;
+                    let pane_id = payload.pane_id;
                     let should_float = payload.should_float;
                     Ok(PluginCommand::FocusTerminalPane(pane_id, should_float))
                 },
@@ -721,7 +721,7 @@ impl TryFrom<ProtobufPluginCommand> for PluginCommand {
             },
             Some(CommandName::FocusPluginPane) => match protobuf_plugin_command.payload {
                 Some(Payload::FocusPluginPanePayload(payload)) => {
-                    let pane_id = payload.pane_id as u32;
+                    let pane_id = payload.pane_id;
                     let should_float = payload.should_float;
                     Ok(PluginCommand::FocusPluginPane(pane_id, should_float))
                 },
@@ -729,7 +729,7 @@ impl TryFrom<ProtobufPluginCommand> for PluginCommand {
             },
             Some(CommandName::RenameTerminalPane) => match protobuf_plugin_command.payload {
                 Some(Payload::RenameTerminalPanePayload(payload)) => {
-                    let pane_id = payload.id as u32;
+                    let pane_id = payload.id;
                     let new_name = payload.new_name;
                     Ok(PluginCommand::RenameTerminalPane(pane_id, new_name))
                 },
@@ -737,7 +737,7 @@ impl TryFrom<ProtobufPluginCommand> for PluginCommand {
             },
             Some(CommandName::RenamePluginPane) => match protobuf_plugin_command.payload {
                 Some(Payload::RenamePluginPanePayload(payload)) => {
-                    let pane_id = payload.id as u32;
+                    let pane_id = payload.id;
                     let new_name = payload.new_name;
                     Ok(PluginCommand::RenamePluginPane(pane_id, new_name))
                 },
@@ -745,7 +745,7 @@ impl TryFrom<ProtobufPluginCommand> for PluginCommand {
             },
             Some(CommandName::RenameTab) => match protobuf_plugin_command.payload {
                 Some(Payload::RenameTabPayload(payload)) => {
-                    let tab_index = payload.id as u32;
+                    let tab_index = payload.id;
                     let name = payload.new_name;
                     Ok(PluginCommand::RenameTab(tab_index, name))
                 },

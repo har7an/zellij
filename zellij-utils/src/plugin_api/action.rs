@@ -1390,19 +1390,19 @@ impl TryFrom<ProtobufMouseEventPayload> for MouseEvent {
     type Error = &'static str;
     fn try_from(protobuf_event: ProtobufMouseEventPayload) -> Result<Self, &'static str> {
         Ok(MouseEvent {
-            event_type: match protobuf_event.event_type as u32 {
+            event_type: match protobuf_event.event_type {
                 0 => MouseEventType::Press,
                 1 => MouseEventType::Release,
                 _ => MouseEventType::Motion,
             },
-            left: protobuf_event.left as bool,
-            right: protobuf_event.right as bool,
-            middle: protobuf_event.middle as bool,
-            wheel_up: protobuf_event.wheel_up as bool,
-            wheel_down: protobuf_event.wheel_down as bool,
-            shift: protobuf_event.shift as bool,
-            alt: protobuf_event.alt as bool,
-            ctrl: protobuf_event.ctrl as bool,
+            left: protobuf_event.left,
+            right: protobuf_event.right,
+            middle: protobuf_event.middle,
+            wheel_up: protobuf_event.wheel_up,
+            wheel_down: protobuf_event.wheel_down,
+            shift: protobuf_event.shift,
+            alt: protobuf_event.alt,
+            ctrl: protobuf_event.ctrl,
             position: Position::new(protobuf_event.line as i32, protobuf_event.column as u16),
         })
     }
@@ -1417,14 +1417,14 @@ impl TryFrom<MouseEvent> for ProtobufMouseEventPayload {
                 MouseEventType::Release => 1,
                 MouseEventType::Motion => 2,
             } as u32,
-            left: event.left as bool,
-            right: event.right as bool,
-            middle: event.middle as bool,
-            wheel_up: event.wheel_up as bool,
-            wheel_down: event.wheel_down as bool,
-            shift: event.shift as bool,
-            alt: event.alt as bool,
-            ctrl: event.ctrl as bool,
+            left: event.left,
+            right: event.right,
+            middle: event.middle,
+            wheel_up: event.wheel_up,
+            wheel_down: event.wheel_down,
+            shift: event.shift,
+            alt: event.alt,
+            ctrl: event.ctrl,
             line: event.position.line.0 as i64,
             column: event.position.column.0 as i64,
         })
