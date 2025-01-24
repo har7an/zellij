@@ -93,8 +93,8 @@ fn serialize_tab(
     match get_tiled_panes_layout_from_panegeoms(tiled_panes, None) {
         Some(tiled_panes_layout) => {
             let floating_panes_layout = get_floating_panes_layout_from_panegeoms(floating_panes);
-            let tiled_panes = if &tiled_panes_layout.children_split_direction
-                != &SplitDirection::default()
+            let tiled_panes = if tiled_panes_layout.children_split_direction
+                != SplitDirection::default()
                 || tiled_panes_layout.children_are_stacked
             {
                 vec![tiled_panes_layout]
