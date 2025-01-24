@@ -949,7 +949,7 @@ impl TryFrom<ProtobufPluginCommand> for PluginCommand {
                                     .pane_id_to_replace
                                     .and_then(|p_id| PaneId::try_from(p_id).ok()),
                                 pane_title: protobuf_new_plugin_args.pane_title,
-                                cwd: protobuf_new_plugin_args.cwd.map(|cwd| PathBuf::from(cwd)),
+                                cwd: protobuf_new_plugin_args.cwd.map(PathBuf::from),
                                 skip_cache: protobuf_new_plugin_args.skip_cache,
                             })
                         }),
@@ -1290,12 +1290,12 @@ impl TryFrom<ProtobufPluginCommand> for PluginCommand {
                         keys_to_rebind: rebind_keys_payload
                             .keys_to_rebind
                             .into_iter()
-                            .filter_map(|k| key_to_rebind_to_plugin_command_assets(k))
+                            .filter_map(key_to_rebind_to_plugin_command_assets)
                             .collect(),
                         keys_to_unbind: rebind_keys_payload
                             .keys_to_unbind
                             .into_iter()
-                            .filter_map(|k| key_to_unbind_to_plugin_command_assets(k))
+                            .filter_map(key_to_unbind_to_plugin_command_assets)
                             .collect(),
                         write_config_to_disk: rebind_keys_payload.write_config_to_disk,
                     })

@@ -119,7 +119,7 @@ impl TryFrom<ProtobufAction> for Action {
                 Some(OptionalPayload::MovePanePayload(payload)) => {
                     let direction: Option<Direction> = payload
                         .direction
-                        .and_then(|d| ProtobufResizeDirection::from_i32(d))
+                        .and_then(ProtobufResizeDirection::from_i32)
                         .and_then(|d| d.try_into().ok());
                     Ok(Action::MovePane(direction))
                 },
@@ -219,7 +219,7 @@ impl TryFrom<ProtobufAction> for Action {
                 Some(OptionalPayload::NewPanePayload(payload)) => {
                     let direction: Option<Direction> = payload
                         .direction
-                        .and_then(|d| ProtobufResizeDirection::from_i32(d))
+                        .and_then(ProtobufResizeDirection::from_i32)
                         .and_then(|d| d.try_into().ok());
                     let pane_name = payload.pane_name;
                     Ok(Action::NewPane(direction, pane_name, false))
@@ -230,10 +230,10 @@ impl TryFrom<ProtobufAction> for Action {
                 Some(OptionalPayload::EditFilePayload(payload)) => {
                     let file_to_edit = PathBuf::from(payload.file_to_edit);
                     let line_number: Option<usize> = payload.line_number.map(|l| l as usize);
-                    let cwd: Option<PathBuf> = payload.cwd.map(|p| PathBuf::from(p));
+                    let cwd: Option<PathBuf> = payload.cwd.map(PathBuf::from);
                     let direction: Option<Direction> = payload
                         .direction
-                        .and_then(|d| ProtobufResizeDirection::from_i32(d))
+                        .and_then(ProtobufResizeDirection::from_i32)
                         .and_then(|d| d.try_into().ok());
                     let should_float = payload.should_float;
                     let should_be_in_place = false;
@@ -268,7 +268,7 @@ impl TryFrom<ProtobufAction> for Action {
                 Some(OptionalPayload::NewTiledPanePayload(payload)) => {
                     let direction: Option<Direction> = payload
                         .direction
-                        .and_then(|d| ProtobufResizeDirection::from_i32(d))
+                        .and_then(ProtobufResizeDirection::from_i32)
                         .and_then(|d| d.try_into().ok());
                     if let Some(payload) = payload.command {
                         let pane_name = payload.pane_name.clone();
@@ -1323,10 +1323,10 @@ impl TryFrom<ProtobufRunCommandAction> for RunCommandAction {
     ) -> Result<Self, &'static str> {
         let command = PathBuf::from(protobuf_run_command_action.command);
         let args: Vec<String> = protobuf_run_command_action.args;
-        let cwd: Option<PathBuf> = protobuf_run_command_action.cwd.map(|c| PathBuf::from(c));
+        let cwd: Option<PathBuf> = protobuf_run_command_action.cwd.map(PathBuf::from);
         let direction: Option<Direction> = protobuf_run_command_action
             .direction
-            .and_then(|d| ProtobufResizeDirection::from_i32(d))
+            .and_then(ProtobufResizeDirection::from_i32)
             .and_then(|d| d.try_into().ok());
         let hold_on_close = protobuf_run_command_action.hold_on_close;
         let hold_on_start = protobuf_run_command_action.hold_on_start;

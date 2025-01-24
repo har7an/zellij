@@ -99,12 +99,12 @@ impl Downloader {
                     .write(true)
                     .open(&file_part_path)
                     .await
-                    .map_err(|e| DownloaderError::Io(e))?;
+                    .map_err(DownloaderError::Io)?;
 
                 let file_part_size = file_part
                     .metadata()
                     .await
-                    .map_err(|e| DownloaderError::Io(e))?
+                    .map_err(DownloaderError::Io)?
                     .len();
 
                 log::debug!("Resuming download from {} bytes", file_part_size);
@@ -113,7 +113,7 @@ impl Downloader {
             } else {
                 let file_part = fs::File::create(&file_part_path)
                     .await
-                    .map_err(|e| DownloaderError::Io(e))?;
+                    .map_err(DownloaderError::Io)?;
 
                 (file_part, 0)
             }
@@ -126,18 +126,18 @@ impl Downloader {
         let body = res.body_mut();
         let mut stream = body.bytes();
         while let Some(byte) = stream.next().await {
-            let byte = byte.map_err(|e| DownloaderError::Io(e))?;
+            let byte = byte.map_err(DownloaderError::Io)?;
             target
                 .write(&[byte])
                 .await
-                .map_err(|e| DownloaderError::Io(e))?;
+                .map_err(DownloaderError::Io)?;
         }
 
         log::debug!("Download complete: {:?}", file_part_path);
 
         fs::rename(file_part_path, file_path)
             .await
-            .map_err(|e| DownloaderError::Io(e))?;
+            .map_err(DownloaderError::Io)?;
 
         Ok(())
     }
@@ -156,7 +156,7 @@ impl Downloader {
         let body = res.body_mut();
         let mut stream = body.bytes();
         while let Some(byte) = stream.next().await {
-            let byte = byte.map_err(|e| DownloaderError::Io(e))?;
+            let byte = byte.map_err(DownloaderError::Io)?;
             downloaded_bytes.push(byte);
         }
 
@@ -180,7 +180,7 @@ impl Downloader {
         let mut lock_dict = self.download_locks.lock().await;
         let download_lock = lock_dict
             .entry(file_name.clone())
-            .or_insert_with(|| Default::default());
+            .or_insert_with(Default::default);
         download_lock.clone()
     }
 }

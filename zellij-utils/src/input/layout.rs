@@ -384,7 +384,7 @@ impl Run {
         match self {
             Run::Plugin(RunPluginOrAlias::RunPlugin(run_plugin)) => Some(run_plugin.clone()),
             Run::Plugin(RunPluginOrAlias::Alias(plugin_alias)) => {
-                plugin_alias.run_plugin.as_ref().map(|r| r.clone())
+                plugin_alias.run_plugin.clone()
             },
             _ => None,
         }
@@ -1070,7 +1070,7 @@ impl TiledPaneLayout {
         }
     }
     pub fn has_focused_node(&self) -> bool {
-        if self.focus.map(|f| f).unwrap_or(false) {
+        if self.focus.unwrap_or(false) {
             return true;
         };
         for child in &self.children {
@@ -1131,7 +1131,7 @@ impl Layout {
     ) -> Vec<LayoutInfo> {
         let mut available_layouts = layout_dir
             .clone()
-            .or_else(|| default_layout_dir())
+            .or_else(default_layout_dir)
             .and_then(|layout_dir| match std::fs::read_dir(layout_dir) {
                 Ok(layout_files) => Some(layout_files),
                 Err(e) => {
@@ -1158,7 +1158,7 @@ impl Layout {
                 }
                 available_layouts
             })
-            .unwrap_or_else(Default::default);
+            .unwrap_or_default();
         let default_layout_name = default_layout_name
             .as_ref()
             .map(|d| d.as_str())
@@ -1188,7 +1188,7 @@ impl Layout {
         let mut should_start_layout_commands_suspended = false;
         let (path_to_raw_layout, raw_layout, raw_swap_layouts) = match layout_info {
             LayoutInfo::File(layout_name_without_extension) => {
-                let layout_dir = layout_dir.clone().or_else(|| default_layout_dir());
+                let layout_dir = layout_dir.clone().or_else(default_layout_dir);
                 let (path_to_layout, stringified_layout, swap_layouts) =
                     Self::stringified_from_dir(
                         &PathBuf::from(layout_name_without_extension),

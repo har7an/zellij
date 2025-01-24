@@ -322,7 +322,7 @@ impl Config {
         let config_file_name = config_file_path
             .file_name()
             .and_then(|f| f.to_str())
-            .unwrap_or_else(|| DEFAULT_CONFIG_FILE_NAME);
+            .unwrap_or(DEFAULT_CONFIG_FILE_NAME);
         for i in 0..100 {
             let new_file_name = if i == 0 {
                 format!("{}.bak", config_file_name)

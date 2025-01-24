@@ -1395,11 +1395,11 @@ impl TryFrom<(&KdlNode, &Options)> for Action {
 
                 let layout = command_metadata
                     .and_then(|c_m| kdl_child_string_value_for_entry(c_m, "layout"))
-                    .map(|layout_string| PathBuf::from(layout_string))
+                    .map(PathBuf::from)
                     .or_else(|| config_options.default_layout.clone());
                 let cwd = command_metadata
                     .and_then(|c_m| kdl_child_string_value_for_entry(c_m, "cwd"))
-                    .map(|cwd_string| PathBuf::from(cwd_string))
+                    .map(PathBuf::from)
                     .map(|cwd| current_dir.join(cwd));
                 let name = command_metadata
                     .and_then(|c_m| kdl_child_string_value_for_entry(c_m, "name"))
@@ -1497,7 +1497,7 @@ impl TryFrom<(&KdlNode, &Options)> for Action {
                 let command_metadata = action_children.iter().next();
                 let cwd = command_metadata
                     .and_then(|c_m| kdl_child_string_value_for_entry(c_m, "cwd"))
-                    .map(|cwd_string| PathBuf::from(cwd_string));
+                    .map(PathBuf::from);
                 let name = command_metadata
                     .and_then(|c_m| kdl_child_string_value_for_entry(c_m, "name"))
                     .map(|name_string| name_string.to_string());
@@ -1584,7 +1584,7 @@ impl TryFrom<(&KdlNode, &Options)> for Action {
                 let current_dir = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
                 let configuration = KdlLayoutParser::parse_plugin_user_configuration(kdl_action)?;
                 let initial_cwd = kdl_get_string_property_or_child_value!(kdl_action, "cwd")
-                    .map(|s| PathBuf::from(s));
+                    .map(PathBuf::from);
                 let run_plugin_or_alias = RunPluginOrAlias::from_url(
                     &plugin_path,
                     &Some(configuration.inner().clone()),
@@ -1698,7 +1698,7 @@ impl TryFrom<(&KdlNode, &Options)> for Action {
                     Some(configuration.inner().clone())
                 };
                 let cwd = kdl_get_string_property_or_child_value!(kdl_action, "cwd")
-                    .map(|s| PathBuf::from(s));
+                    .map(PathBuf::from);
 
                 let name = name
                     // first we try to take the explicitly supplied message name
@@ -3612,7 +3612,7 @@ impl BareKey {
 
 impl Config {
     pub fn from_kdl(kdl_config: &str, base_config: Option<Config>) -> Result<Config, ConfigError> {
-        let mut config = base_config.unwrap_or_else(|| Config::default());
+        let mut config = base_config.unwrap_or_default();
         let kdl_config: KdlDocument = kdl_config.parse()?;
 
         let config_options = Options::from_kdl(&kdl_config)?;
@@ -3692,7 +3692,7 @@ impl PluginAliases {
                         KdlLayoutParser::parse_plugin_user_configuration(alias_definition)?;
                     let initial_cwd =
                         kdl_get_string_property_or_child_value!(alias_definition, "cwd")
-                            .map(|s| PathBuf::from(s));
+                            .map(PathBuf::from);
                     let run_plugin = RunPlugin::from_url(string_url)?
                         .with_configuration(configuration.inner().clone())
                         .with_initial_cwd(initial_cwd);
@@ -3828,7 +3828,7 @@ fn load_plugins_from_kdl(
             let string_url = url_node.value();
             let configuration = KdlLayoutParser::parse_plugin_user_configuration(plugin_block)?;
             let cwd = kdl_get_string_property_or_child_value!(&plugin_block, "cwd")
-                .map(|s| PathBuf::from(s));
+                .map(PathBuf::from);
             let run_plugin_or_alias = RunPluginOrAlias::from_url(
                 string_url,
                 &Some(configuration.inner().clone()),
@@ -4108,7 +4108,7 @@ impl SessionInfo {
         let panes: PaneManifest = kdl_document
             .get("panes")
             .and_then(|p| p.children())
-            .map(|p| PaneManifest::decode_from_kdl(p))
+            .map(PaneManifest::decode_from_kdl)
             .ok_or("Failed to parse panes")?;
         let available_layouts: Vec<LayoutInfo> = kdl_document
             .get("available_layouts")

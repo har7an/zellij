@@ -56,7 +56,7 @@ impl<'a> KdlLayoutParser<'a> {
             default_tab_template: None,
             new_tab_template: None,
             global_cwd,
-            file_name: file_name.map(|f| PathBuf::from(f)),
+            file_name: file_name.map(PathBuf::from),
         }
     }
     fn is_a_reserved_word(&self, word: &str) -> bool {
@@ -320,7 +320,7 @@ impl<'a> KdlLayoutParser<'a> {
         )?;
         let configuration = KdlLayoutParser::parse_plugin_user_configuration(plugin_block)?;
         let initial_cwd =
-            kdl_get_string_property_or_child_value!(&plugin_block, "cwd").map(|s| PathBuf::from(s));
+            kdl_get_string_property_or_child_value!(&plugin_block, "cwd").map(PathBuf::from);
         let cwd = self.cwd_prefix(initial_cwd.as_ref())?;
         let run_plugin_or_alias = RunPluginOrAlias::from_url(
             string_url,
@@ -447,12 +447,12 @@ impl<'a> KdlLayoutParser<'a> {
             )?;
         }
         let hold_on_close = close_on_exit.map(|c| !c).unwrap_or(true);
-        let hold_on_start = start_suspended.map(|c| c).unwrap_or(false);
+        let hold_on_start = start_suspended.unwrap_or(false);
         match (command, edit, cwd) {
             (None, None, Some(cwd)) => Ok(Some(Run::Cwd(cwd))),
             (Some(command), None, cwd) => Ok(Some(Run::Command(RunCommand {
                 command,
-                args: args.unwrap_or_else(|| vec![]),
+                args: args.unwrap_or_else(std::vec::Vec::new),
                 cwd,
                 hold_on_close,
                 hold_on_start,
@@ -1877,7 +1877,7 @@ impl<'a> KdlLayoutParser<'a> {
             let child_name = kdl_name!(child);
             if child_name == "swap_tiled_layout" {
                 let swap_layout_name =
-                    kdl_get_string_property_or_child_value!(child, "name").map(|n| String::from(n));
+                    kdl_get_string_property_or_child_value!(child, "name").map(String::from);
                 if let Some(swap_tiled_layout_group) = kdl_children_nodes!(child) {
                     let mut swap_tiled_layout = BTreeMap::new();
                     for layout in swap_tiled_layout_group {
@@ -1941,7 +1941,7 @@ impl<'a> KdlLayoutParser<'a> {
             let child_name = kdl_name!(child);
             if child_name == "swap_floating_layout" {
                 let swap_layout_name =
-                    kdl_get_string_property_or_child_value!(child, "name").map(|n| String::from(n));
+                    kdl_get_string_property_or_child_value!(child, "name").map(String::from);
                 if let Some(swap_floating_layout_group) = kdl_children_nodes!(child) {
                     let mut swap_floating_layout = BTreeMap::new();
                     for layout in swap_floating_layout_group {
@@ -2112,7 +2112,7 @@ impl<'a> KdlLayoutParser<'a> {
         } else {
             let default_tab_tiled_panes_template = self
                 .default_template()?
-                .unwrap_or_else(|| TiledPaneLayout::default());
+                .unwrap_or_else(TiledPaneLayout::default);
             Some((default_tab_tiled_panes_template, vec![]))
         };
 
@@ -2168,7 +2168,7 @@ impl<'a> KdlLayoutParser<'a> {
         } else {
             let default_tab_tiled_panes_template = self
                 .default_template()?
-                .unwrap_or_else(|| TiledPaneLayout::default());
+                .unwrap_or_else(TiledPaneLayout::default);
             Some((default_tab_tiled_panes_template, child_floating_panes))
         };
         Ok(Layout {

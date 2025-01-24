@@ -374,7 +374,7 @@ impl KeyModifier {
             .ok() // convert to string: (eg. "16")
             .and_then(|s| u8::from_str_radix(s, 10).ok()) // convert to u8: (eg. 16)
             .map(|s| s.saturating_sub(1)) // subtract 1: (eg. 15)
-            .and_then(|b| ModifierFlags::from_bits(b)); // bitflags: (0b0000_1111: Shift, Alt, Control, Super)
+            .and_then(ModifierFlags::from_bits); // bitflags: (0b0000_1111: Shift, Alt, Control, Super)
         let mut key_modifiers = BTreeSet::new();
         if let Some(modifier_flags) = modifier_flags {
             for name in modifier_flags.iter() {
@@ -1649,7 +1649,7 @@ impl PipeMessage {
             source,
             name: name.into(),
             payload: payload.clone(),
-            args: args.clone().unwrap_or_else(|| Default::default()),
+            args: args.clone().unwrap_or_default(),
             is_private,
         }
     }

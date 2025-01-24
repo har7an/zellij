@@ -104,7 +104,7 @@ impl Keybinds {
             let input_mode_keybinds = self
                 .0
                 .entry(other_input_mode)
-                .or_insert_with(|| Default::default());
+                .or_default();
             for (other_action, other_action_keybinds) in other_input_mode_keybinds.drain() {
                 input_mode_keybinds.insert(other_action, other_action_keybinds);
             }

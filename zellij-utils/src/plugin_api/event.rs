@@ -749,7 +749,7 @@ impl TryFrom<SessionInfo> for ProtobufSessionManifest {
             plugins: session_info
                 .plugins
                 .into_iter()
-                .map(|p| ProtobufPluginInfo::from(p))
+                .map(ProtobufPluginInfo::from)
                 .collect(),
         })
     }

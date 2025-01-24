@@ -478,7 +478,7 @@ impl Action {
                 let current_dir = get_current_dir();
                 let cwd = cwd
                     .map(|cwd| current_dir.join(cwd))
-                    .or_else(|| Some(current_dir));
+                    .or(Some(current_dir));
                 if file.is_relative() {
                     if let Some(cwd) = cwd.as_ref() {
                         file = cwd.join(file);
@@ -524,7 +524,7 @@ impl Action {
                 let current_dir = get_current_dir();
                 let cwd = cwd
                     .map(|cwd| current_dir.join(cwd))
-                    .or_else(|| Some(current_dir));
+                    .or(Some(current_dir));
                 if let Some(layout_path) = layout {
                     let layout_dir = layout_dir
                         .or_else(|| config.and_then(|c| c.options.layout_dir))
@@ -715,7 +715,7 @@ impl Action {
                 let current_dir = get_current_dir();
                 let cwd = plugin_cwd
                     .map(|cwd| current_dir.join(cwd))
-                    .or_else(|| Some(current_dir));
+                    .or(Some(current_dir));
                 let skip_cache = skip_plugin_cache;
                 let pipe_id = Uuid::new_v4().to_string();
                 Ok(vec![Action::CliPipe {
@@ -750,7 +750,7 @@ impl Action {
                                     malformed_ids.push(stringified_pane_id.to_owned());
                                     None
                                 })
-                                .map(|id| PaneId::Terminal(id))
+                                .map(PaneId::Terminal)
                         } else if let Some(plugin_pane_id) =
                             stringified_pane_id.strip_prefix("plugin_")
                         {
@@ -760,7 +760,7 @@ impl Action {
                                     malformed_ids.push(stringified_pane_id.to_owned());
                                     None
                                 })
-                                .map(|id| PaneId::Plugin(id))
+                                .map(PaneId::Plugin)
                         } else {
                             u32::from_str_radix(stringified_pane_id, 10)
                                 .ok()
@@ -768,7 +768,7 @@ impl Action {
                                     malformed_ids.push(stringified_pane_id.to_owned());
                                     None
                                 })
-                                .map(|id| PaneId::Terminal(id))
+                                .map(PaneId::Terminal)
                         }
                     })
                     .collect();

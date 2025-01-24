@@ -223,7 +223,7 @@ impl Options {
         let session_name = other.session_name.or_else(|| self.session_name.clone());
         let attach_to_session = other
             .attach_to_session
-            .or_else(|| self.attach_to_session.clone());
+            .or(self.attach_to_session);
         let session_serialization = other.session_serialization.or(self.session_serialization);
         let serialize_pane_viewport = other
             .serialize_pane_viewport
@@ -314,10 +314,10 @@ impl Options {
         let session_name = other.session_name.or_else(|| self.session_name.clone());
         let attach_to_session = other
             .attach_to_session
-            .or_else(|| self.attach_to_session.clone());
+            .or(self.attach_to_session);
         let scrollback_lines_to_serialize = other
             .scrollback_lines_to_serialize
-            .or_else(|| self.scrollback_lines_to_serialize.clone());
+            .or(self.scrollback_lines_to_serialize);
         let styled_underlines = other.styled_underlines.or(self.styled_underlines);
         let serialization_interval = other.serialization_interval.or(self.serialization_interval);
         let disable_session_metadata = other
