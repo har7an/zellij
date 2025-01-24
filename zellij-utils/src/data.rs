@@ -998,10 +998,12 @@ impl PluginPermission {
     PartialOrd,
     Ord,
 )]
+#[derive(Default)]
 pub enum InputMode {
     /// In `Normal` mode, input is always written to the terminal, except for the shortcuts leading
     /// to other modes
     #[serde(alias = "normal")]
+    #[default]
     Normal,
     /// In `Locked` mode, input is always written to the terminal and all shortcuts are disabled
     /// except the one leading back to normal mode
@@ -1045,21 +1047,13 @@ pub enum InputMode {
     Tmux,
 }
 
-impl Default for InputMode {
-    fn default() -> InputMode {
-        InputMode::Normal
-    }
-}
 
 #[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Eq, Hash)]
+#[derive(Default)]
 pub enum ThemeHue {
     Light,
+    #[default]
     Dark,
-}
-impl Default for ThemeHue {
-    fn default() -> ThemeHue {
-        ThemeHue::Dark
-    }
 }
 
 #[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Eq, Hash)]
@@ -1098,14 +1092,11 @@ impl FromStr for InputMode {
 }
 
 #[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Eq, Hash)]
+#[derive(Default)]
 pub enum PaletteSource {
+    #[default]
     Default,
     Xresources,
-}
-impl Default for PaletteSource {
-    fn default() -> PaletteSource {
-        PaletteSource::Default
-    }
 }
 #[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Eq, Hash, Default)]
 pub struct Palette {

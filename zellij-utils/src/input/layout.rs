@@ -40,7 +40,9 @@ use std::{fs::File, io::prelude::*};
 use url::Url;
 
 #[derive(Debug, PartialEq, Eq, Serialize, Deserialize, Clone, Copy)]
+#[derive(Default)]
 pub enum SplitDirection {
+    #[default]
     Horizontal,
     Vertical,
 }
@@ -1831,11 +1833,6 @@ fn adjust_geoms_for_rounding_errors(
     }
 }
 
-impl Default for SplitDirection {
-    fn default() -> Self {
-        SplitDirection::Horizontal
-    }
-}
 
 impl FromStr for SplitDirection {
     type Err = Box<dyn std::error::Error>;

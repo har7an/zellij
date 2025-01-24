@@ -42,6 +42,12 @@ pub enum MouseEventType {
     Motion,
 }
 
+impl Default for MouseEvent {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl MouseEvent {
     pub fn new() -> Self {
         let event = MouseEvent {
