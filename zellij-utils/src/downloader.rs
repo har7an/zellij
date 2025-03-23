@@ -1,23 +1,36 @@
+// The Plan:
+// - Replace async-std with tokio
+// - Replace isahc with reqwest (which interacts with tokio)
 use async_std::sync::Mutex;
 use async_std::{
     fs,
-    io::{ReadExt, WriteExt},
+    io::WriteExt,
     stream::StreamExt,
 };
-use isahc::prelude::*;
-use isahc::{config::RedirectPolicy, HttpClient, Request};
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::Arc;
 use thiserror::Error;
 use url::Url;
 
+/// Maximum allowed number of HTTP redirects during downloads. Don't set this arbitrarily high to
+/// prevent infinite redirection (from e.g. redirection loops).
+const MAX_HTTP_REDIRECTS: usize = 64;
+
 #[derive(Error, Debug)]
 pub enum DownloaderError {
-    #[error("RequestError: {0}")]
-    Request(#[from] isahc::Error),
-    #[error("HttpError: {0}")]
-    HttpError(#[from] isahc::http::Error),
+    #[error("failed to initialize downloader")]
+    CantInitialize(#[from] reqwest::Error),
+    #[error("failed to send for '{url}' to server")]
+    Client {
+        url: String,
+        from: reqwest::Error,
+    },
+    #[error("failed to obtain valid reply from server")]
+    Server {
+        url: String,
+        from: reqwest::Error,
+    },
     #[error("IoError: {0}")]
     Io(#[source] std::io::Error),
     #[error("StdIoError: {0}")]
@@ -30,7 +43,7 @@ pub enum DownloaderError {
 
 #[derive(Debug, Clone)]
 pub struct Downloader {
-    client: Option<HttpClient>,
+    client: reqwest::Client,
     location: PathBuf,
     // the whole thing is an Arc/Mutex so that Downloader is thread safe, and the individual values of
     // the HashMap are Arc/Mutexes (Mutexi?) to represent that individual downloads should not
@@ -38,31 +51,21 @@ pub struct Downloader {
     download_locks: Arc<Mutex<HashMap<String, Arc<Mutex<()>>>>>,
 }
 
-impl Default for Downloader {
-    fn default() -> Self {
-        Self {
-            client: HttpClient::builder()
-                // TODO: timeout?
-                .redirect_policy(RedirectPolicy::Follow)
-                .build()
-                .ok(),
-            location: PathBuf::from(""),
-            download_locks: Default::default(),
-        }
-    }
+fn http_client() -> Result<reqwest::Client, DownloaderError> {
+    // TODO: timeout?
+    reqwest::Client::builder()
+        .redirect(reqwest::redirect::Policy::limited(MAX_HTTP_REDIRECTS))
+        .build()
+        .map_err(|e| DownloaderError::CantInitialize(e))
 }
 
 impl Downloader {
-    pub fn new(location: PathBuf) -> Self {
-        Self {
-            client: HttpClient::builder()
-                // TODO: timeout?
-                .redirect_policy(RedirectPolicy::Follow)
-                .build()
-                .ok(),
+    pub fn new(location: PathBuf) -> Result<Self, DownloaderError> {
+        Ok(Self {
+            client: http_client()?,
             location,
             download_locks: Default::default(),
-        }
+        })
     }
 
     pub async fn download(
@@ -70,10 +73,6 @@ impl Downloader {
         url: &str,
         file_name: Option<&str>,
     ) -> Result<(), DownloaderError> {
-        let Some(client) = &self.client else {
-            log::error!("No Http client found, cannot perform requests - this is likely a misconfiguration of isahc::HttpClient");
-            return Ok(());
-        };
         let file_name = match file_name {
             Some(name) => name.to_string(),
             None => self.parse_name(url)?,
@@ -118,19 +117,16 @@ impl Downloader {
                 (file_part, 0)
             }
         };
-        let request = Request::get(url)
+        let res = self.client.get(url)
             .header("Content-Type", "application/octet-stream")
             .header("Range", format!("bytes={}-", file_part_size))
-            .body(())?;
-        let mut res = client.send_async(request).await?;
-        let body = res.body_mut();
-        let mut stream = body.bytes();
-        while let Some(byte) = stream.next().await {
-            let byte = byte.map_err(|e| DownloaderError::Io(e))?;
-            target
-                .write(&[byte])
-                .await
-                .map_err(|e| DownloaderError::Io(e))?;
+            .send()
+            .await?
+            .error_for_status()?;
+        let mut stream = res.bytes_stream();
+        while let Some(chunk) = stream.next().await {
+            let chunk = chunk.unwrap();
+            target.write(&chunk).await.unwrap();
         }
 
         log::debug!("Download complete: {:?}", file_part_path);
@@ -142,22 +138,20 @@ impl Downloader {
         Ok(())
     }
     pub async fn download_without_cache(url: &str) -> Result<String, DownloaderError> {
-        let request = Request::get(url)
+        let client = http_client()?;
+        let res = client.get(url)
             .header("Content-Type", "application/octet-stream")
-            .body(())?;
-        let client = HttpClient::builder()
-            // TODO: timeout?
-            .redirect_policy(RedirectPolicy::Follow)
-            .build()?;
-
-        let mut res = client.send_async(request).await?;
+            .send()
+            .await
+            .map_err(|from| DownloaderError::Client{url: url.to_string(), from})?
+            .error_for_status()
+            .map_err(|from| DownloaderError::Server{url: url.to_string(), from})?;
+        let mut stream = res.bytes_stream();
 
         let mut downloaded_bytes: Vec<u8> = vec![];
-        let body = res.body_mut();
-        let mut stream = body.bytes();
-        while let Some(byte) = stream.next().await {
-            let byte = byte.map_err(|e| DownloaderError::Io(e))?;
-            downloaded_bytes.push(byte);
+        while let Some(chunk) = stream.next().await {
+            let chunk = chunk.unwrap();
+            downloaded_bytes.extend_from_slice(&chunk);
         }
 
         log::debug!("Download complete");
