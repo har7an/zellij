@@ -254,7 +254,8 @@ pub(crate) fn plugin_thread_main(
         layout_dir,
         default_mode,
         default_keybinds,
-    );
+    )
+    .context("failed to spawn WASM bridge")?;
 
     for run_plugin_or_alias in background_plugins {
         load_background_plugin(

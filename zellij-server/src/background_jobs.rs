@@ -7,10 +7,6 @@ use zellij_utils::data::{Event, HttpVerb, SessionInfo};
 use zellij_utils::errors::{prelude::*, BackgroundJobContext, ContextType};
 use zellij_utils::input::layout::RunPlugin;
 
-use isahc::prelude::*;
-use isahc::AsyncReadResponseExt;
-use isahc::{config::RedirectPolicy, HttpClient, Request};
-
 use std::collections::{BTreeMap, HashMap};
 use std::fs;
 use std::io::Write;
@@ -83,6 +79,9 @@ static FLASH_DURATION_MS: u64 = 1000;
 static PLUGIN_ANIMATION_OFFSET_DURATION_MD: u64 = 500;
 static SESSION_READ_DURATION: u64 = 1000;
 static DEFAULT_SERIALIZATION_INTERVAL: u64 = 60000;
+/// Maximum allowed number of HTTP redirects during downloads. Don't set this arbitrarily high to
+/// prevent infinite redirection (from e.g. redirection loops).
+static MAX_HTTP_REDIRECTS: usize = 64;
 
 pub(crate) fn background_jobs_main(
     bus: Bus<BackgroundJob>,
@@ -101,9 +100,9 @@ pub(crate) fn background_jobs_main(
     let serialization_interval = serialization_interval.map(|s| s * 1000); // convert to
                                                                            // milliseconds
 
-    let http_client = HttpClient::builder()
+    let http_client = reqwest::Client::builder()
         // TODO: timeout?
-        .redirect_policy(RedirectPolicy::Follow)
+        .redirect(reqwest::redirect::Policy::limited(MAX_HTTP_REDIRECTS))
         .build()
         .ok();
 
@@ -288,27 +287,24 @@ pub(crate) fn background_jobs_main(
                             verb: HttpVerb,
                             headers: BTreeMap<String, String>,
                             body: Vec<u8>,
-                            http_client: HttpClient,
+                            http_client: reqwest::Client,
                         ) -> Result<
                             (u16, BTreeMap<String, String>, Vec<u8>), // status_code, headers, body
-                            isahc::Error,
+                            reqwest::Error,
                         > {
                             let mut request = match verb {
-                                HttpVerb::Get => Request::get(url),
-                                HttpVerb::Post => Request::post(url),
-                                HttpVerb::Put => Request::put(url),
-                                HttpVerb::Delete => Request::delete(url),
+                                HttpVerb::Get => http_client.get(url),
+                                HttpVerb::Post => http_client.post(url),
+                                HttpVerb::Put => http_client.put(url),
+                                HttpVerb::Delete => http_client.delete(url),
                             };
                             for (header, value) in headers {
                                 request = request.header(header.as_str(), value);
                             }
-                            let mut res = if !body.is_empty() {
-                                let req = request.body(body)?;
-                                http_client.send_async(req).await?
-                            } else {
-                                let req = request.body(())?;
-                                http_client.send_async(req).await?
-                            };
+                            if !body.is_empty() {
+                                request = request.body(body);
+                            }
+                            let res = request.send().await?;
 
                             let status_code = res.status();
                             let headers: BTreeMap<String, String> = res
@@ -327,7 +323,7 @@ pub(crate) fn background_jobs_main(
                                 })
                                 .collect();
                             let body = res.bytes().await?;
-                            Ok((status_code.as_u16(), headers, body))
+                            Ok((status_code.as_u16(), headers, body.to_vec()))
                         }
                         let Some(http_client) = http_client else {
                             log::error!("Cannot perform http request, likely due to a misconfigured http client");

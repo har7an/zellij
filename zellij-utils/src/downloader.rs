@@ -2,11 +2,7 @@
 // - Replace async-std with tokio
 // - Replace isahc with reqwest (which interacts with tokio)
 use async_std::sync::Mutex;
-use async_std::{
-    fs,
-    io::WriteExt,
-    stream::StreamExt,
-};
+use async_std::{fs, io::WriteExt, stream::StreamExt};
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -22,15 +18,9 @@ pub enum DownloaderError {
     #[error("failed to initialize downloader")]
     CantInitialize(#[from] reqwest::Error),
     #[error("failed to send for '{url}' to server")]
-    Client {
-        url: String,
-        from: reqwest::Error,
-    },
+    Client { url: String, from: reqwest::Error },
     #[error("failed to obtain valid reply from server")]
-    Server {
-        url: String,
-        from: reqwest::Error,
-    },
+    Server { url: String, from: reqwest::Error },
     #[error("IoError: {0}")]
     Io(#[source] std::io::Error),
     #[error("StdIoError: {0}")]
@@ -117,7 +107,9 @@ impl Downloader {
                 (file_part, 0)
             }
         };
-        let res = self.client.get(url)
+        let res = self
+            .client
+            .get(url)
             .header("Content-Type", "application/octet-stream")
             .header("Range", format!("bytes={}-", file_part_size))
             .send()
@@ -139,13 +131,20 @@ impl Downloader {
     }
     pub async fn download_without_cache(url: &str) -> Result<String, DownloaderError> {
         let client = http_client()?;
-        let res = client.get(url)
+        let res = client
+            .get(url)
             .header("Content-Type", "application/octet-stream")
             .send()
             .await
-            .map_err(|from| DownloaderError::Client{url: url.to_string(), from})?
+            .map_err(|from| DownloaderError::Client {
+                url: url.to_string(),
+                from,
+            })?
             .error_for_status()
-            .map_err(|from| DownloaderError::Server{url: url.to_string(), from})?;
+            .map_err(|from| DownloaderError::Server {
+                url: url.to_string(),
+                from,
+            })?;
         let mut stream = res.bytes_stream();
 
         let mut downloaded_bytes: Vec<u8> = vec![];

@@ -24,7 +24,6 @@ close_fds = { version = "0.3.2", default-features = false }
 daemonize = { version = "0.5", default-features = false }
 highway = { version = "0.6.4", default-features = false, features = ["std"] }
 interprocess = { workspace = true }
-isahc = { workspace = true }
 lazy_static = { workspace = true }
 libc = { workspace = true }
 log = { workspace = true }
@@ -32,6 +31,7 @@ nix = { workspace = true }
 notify-debouncer-full = { workspace = true }
 prost = { workspace = true }
 regex = { workspace = true }
+reqwest = { workspace = true }
 semver = { version = "0.11.0", default-features = false }
 serde = { workspace = true }
 serde_json = { workspace = true }

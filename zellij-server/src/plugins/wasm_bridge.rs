@@ -125,14 +125,14 @@ impl WasmBridge {
         layout_dir: Option<PathBuf>,
         default_mode: InputMode,
         default_keybinds: Keybinds,
-    ) -> Self {
+    ) -> Result<Self> {
         let plugin_map = Arc::new(Mutex::new(PluginMap::default()));
         let connected_clients: Arc<Mutex<Vec<ClientId>>> = Arc::new(Mutex::new(vec![]));
         let plugin_cache: Arc<Mutex<HashMap<PathBuf, Module>>> =
             Arc::new(Mutex::new(HashMap::new()));
         let watcher = None;
-        let downloader = Downloader::new(ZELLIJ_CACHE_DIR.to_path_buf());
-        WasmBridge {
+        let downloader = Downloader::new(ZELLIJ_CACHE_DIR.to_path_buf())?;
+        Ok(WasmBridge {
             connected_clients,
             senders,
             engine,
@@ -161,7 +161,7 @@ impl WasmBridge {
             keybinds: HashMap::new(),
             base_modes: HashMap::new(),
             downloader,
-        }
+        })
     }
     pub fn load_plugin(
         &mut self,
