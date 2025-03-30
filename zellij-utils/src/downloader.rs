@@ -1,12 +1,9 @@
-// The Plan:
-// - Replace async-std with tokio
-// - Replace isahc with reqwest (which interacts with tokio)
-use async_std::sync::Mutex;
-use async_std::{fs, io::WriteExt, stream::StreamExt};
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::Arc;
 use thiserror::Error;
+use tokio::{io::AsyncWriteExt as _, sync::Mutex};
+use tokio_stream::StreamExt as _;
 use url::Url;
 
 /// Maximum allowed number of HTTP redirects during downloads. Don't set this arbitrarily high to
@@ -83,7 +80,7 @@ impl Downloader {
         let file_part_path = self.location.join(format!("{}.part", file_name));
         let (mut target, file_part_size) = {
             if file_part_path.exists() {
-                let file_part = fs::OpenOptions::new()
+                let file_part = tokio::fs::OpenOptions::new()
                     .append(true)
                     .write(true)
                     .open(&file_part_path)
@@ -100,7 +97,7 @@ impl Downloader {
 
                 (file_part, file_part_size)
             } else {
-                let file_part = fs::File::create(&file_part_path)
+                let file_part = tokio::fs::File::create(&file_part_path)
                     .await
                     .map_err(|e| DownloaderError::Io(e))?;
 
@@ -123,7 +120,7 @@ impl Downloader {
 
         log::debug!("Download complete: {:?}", file_part_path);
 
-        fs::rename(file_part_path, file_path)
+        tokio::fs::rename(file_part_path, file_path)
             .await
             .map_err(|e| DownloaderError::Io(e))?;
 
@@ -185,12 +182,13 @@ mod tests {
     use tempfile::tempdir;
 
     #[ignore]
-    #[async_std::test]
+    #[tokio::test]
     async fn test_download_ok() {
         let location = tempdir().expect("Failed to create temp directory");
         let location_path = location.path();
 
-        let downloader = Downloader::new(location_path.to_path_buf());
+        let downloader =
+            Downloader::new(location_path.to_path_buf()).expect("Failed to setup downloader");
         let result = downloader
             .download(
                 "https://github.com/imsnif/monocle/releases/download/0.39.0/monocle.wasm",
@@ -206,12 +204,13 @@ mod tests {
     }
 
     #[ignore]
-    #[async_std::test]
+    #[tokio::test]
     async fn test_download_without_file_name() {
         let location = tempdir().expect("Failed to create temp directory");
         let location_path = location.path();
 
-        let downloader = Downloader::new(location_path.to_path_buf());
+        let downloader =
+            Downloader::new(location_path.to_path_buf()).expect("Failed to setup downloader");
         let result = downloader
             .download(
                 "https://github.com/imsnif/multitask/releases/download/0.38.2v2/multitask.wasm",
