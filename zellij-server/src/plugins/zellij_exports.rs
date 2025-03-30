@@ -5,7 +5,6 @@ use crate::plugins::wasm_bridge::handle_plugin_crash;
 use crate::pty::{ClientTabIndexOrPaneId, PtyInstruction};
 use crate::route::route_action;
 use crate::ServerInstruction;
-use async_std::task;
 use interprocess::local_socket::LocalSocketStream;
 use log::warn;
 use serde::Serialize;
@@ -1135,9 +1134,9 @@ fn set_timeout(env: &PluginEnv, secs: f64) {
     let update_target = Some(env.plugin_id);
     let client_id = env.client_id;
     let plugin_name = env.name();
-    task::spawn(async move {
+    tokio::task::spawn(async move {
         let start_time = Instant::now();
-        task::sleep(Duration::from_secs_f64(secs)).await;
+        tokio::time::sleep(Duration::from_secs_f64(secs)).await;
         // FIXME: The way that elapsed time is being calculated here is not exact; it doesn't take into account the
         // time it takes an event to actually reach the plugin after it's sent to the `wasm` thread.
         let elapsed_time = Instant::now().duration_since(start_time).as_secs_f64();

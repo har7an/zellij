@@ -1,4 +1,4 @@
-use async_std::task;
+use tokio::task;
 use zellij_utils::consts::{
     session_info_cache_file_name, session_info_folder_for_session, session_layout_cache_file_name,
     ZELLIJ_SESSION_INFO_CACHE_DIR, ZELLIJ_SOCK_DIR,
@@ -124,7 +124,8 @@ pub(crate) fn background_jobs_main(
                                 Some(text),
                             ),
                         );
-                        task::sleep(std::time::Duration::from_millis(FLASH_DURATION_MS)).await;
+                        tokio::time::sleep(std::time::Duration::from_millis(FLASH_DURATION_MS))
+                            .await;
                         let _ = senders.send_to_screen(
                             ScreenInstruction::ClearPaneFrameColorOverride(pane_ids),
                         );
@@ -144,7 +145,7 @@ pub(crate) fn background_jobs_main(
                             let _ = senders.send_to_screen(
                                 ScreenInstruction::ProgressPluginLoadingOffset(pid),
                             );
-                            task::sleep(std::time::Duration::from_millis(
+                            tokio::time::sleep(std::time::Duration::from_millis(
                                 PLUGIN_ANIMATION_OFFSET_DURATION_MD,
                             ))
                             .await;
@@ -225,8 +226,10 @@ pub(crate) fn background_jobs_main(
                                 let _ = senders.send_to_screen(ScreenInstruction::DumpLayoutToHd);
                                 *last_serialization_time.lock().unwrap() = Instant::now();
                             }
-                            task::sleep(std::time::Duration::from_millis(SESSION_READ_DURATION))
-                                .await;
+                            tokio::time::sleep(std::time::Duration::from_millis(
+                                SESSION_READ_DURATION,
+                            ))
+                            .await;
                         }
                     }
                 });
@@ -240,17 +243,18 @@ pub(crate) fn background_jobs_main(
                 cwd,
                 context,
             ) => {
-                // when async_std::process stabilizes, we should change this to be async
-                std::thread::spawn({
+                task::spawn({
                     let senders = bus.senders.clone();
-                    move || {
-                        let output = std::process::Command::new(&command)
+                    async move {
+                        let output = tokio::process::Command::new(&command)
                             .args(&args)
                             .envs(env_variables)
                             .current_dir(cwd)
+                            .stdin(std::process::Stdio::null())
                             .stdout(std::process::Stdio::piped())
                             .stderr(std::process::Stdio::piped())
-                            .output();
+                            .output()
+                            .await;
                         match output {
                             Ok(output) => {
                                 let stdout = output.stdout.to_vec();

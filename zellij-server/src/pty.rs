@@ -8,13 +8,10 @@ use crate::{
     thread_bus::{Bus, ThreadSenders},
     ClientId, ServerInstruction,
 };
-use async_std::{
-    self,
-    task::{self, JoinHandle},
-};
 use nix::unistd::Pid;
 use std::sync::Arc;
 use std::{collections::HashMap, os::unix::io::RawFd, path::PathBuf};
+use tokio::task::{self, JoinHandle};
 use zellij_utils::{
     data::{Event, FloatingPaneCoordinates, OriginatingPlugin},
     errors::prelude::*,
@@ -1337,17 +1334,19 @@ impl Pty {
             PaneId::Terminal(id) => {
                 self.task_handles.remove(&id);
                 if let Some(child_fd) = self.id_to_child_pid.remove(&id) {
-                    task::block_on(async {
-                        let err_context = || format!("failed to run async task for pane {id}");
-                        self.bus
-                            .os_input
-                            .as_mut()
-                            .with_context(err_context)
-                            .fatal()
-                            .kill(Pid::from_raw(child_fd))
-                            .with_context(err_context)
-                            .fatal();
-                    });
+                    tokio::runtime::Runtime::new()
+                        .context("failed to spawn async runtime")?
+                        .block_on(async {
+                            let err_context = || format!("failed to run async task for pane {id}");
+                            self.bus
+                                .os_input
+                                .as_mut()
+                                .with_context(err_context)
+                                .fatal()
+                                .kill(Pid::from_raw(child_fd))
+                                .with_context(err_context)
+                                .fatal();
+                        });
                 }
                 self.bus
                     .os_input

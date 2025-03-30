@@ -3,11 +3,11 @@ use crate::{
     screen::ScreenInstruction,
     thread_bus::ThreadSenders,
 };
-use async_std::{future::timeout as async_timeout, task};
 use std::{
     os::unix::io::RawFd,
     time::{Duration, Instant},
 };
+use tokio::{task, time::timeout as async_timeout};
 use zellij_utils::{
     errors::{get_current_ctx, prelude::*, ContextType},
     logging::debug_to_file,
@@ -153,7 +153,8 @@ impl TerminalBytes {
         let senders = self.senders.clone();
         task::spawn_blocking(move || senders.send_to_screen(screen_instruction))
             .await
-            .context("failed to async-send to screen")?;
+            .context("failed to async-send to screen")?
+            .context("failed to block on sending message to screen")?;
         Ok(sent_at.elapsed())
     }
     fn update_render_send_time(&mut self, time_to_send_render: Duration) {

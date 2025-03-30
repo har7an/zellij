@@ -8,8 +8,6 @@ use crate::plugins::plugin_map::{AtomicEvent, PluginEnv, PluginMap, RunningPlugi
 use crate::plugins::plugin_worker::MessageToWorker;
 use crate::plugins::watch_filesystem::watch_filesystem;
 use crate::plugins::zellij_exports::{wasi_read_string, wasi_write_object};
-use async_channel::Sender;
-use async_std::task::{self, JoinHandle};
 use highway::{HighwayHash, PortableHash};
 use log::info;
 use notify_debouncer_full::{notify::RecommendedWatcher, Debouncer, FileIdMap};
@@ -18,6 +16,10 @@ use std::{
     path::PathBuf,
     str::FromStr,
     sync::{Arc, Mutex},
+};
+use tokio::{
+    sync::mpsc::Sender,
+    task::{self, JoinHandle},
 };
 use wasmtime::{Engine, Module};
 use zellij_utils::consts::{ZELLIJ_CACHE_DIR, ZELLIJ_TMP_DIR};
@@ -981,7 +983,7 @@ impl WasmBridge {
     }
     pub fn cleanup(&mut self) {
         for (_plugin_id, loading_plugin_task) in self.loading_plugins.drain() {
-            drop(loading_plugin_task.cancel());
+            loading_plugin_task.abort();
         }
         let plugin_ids = self.plugin_map.lock().unwrap().plugin_ids();
         for plugin_id in &plugin_ids {
@@ -1284,7 +1286,7 @@ impl WasmBridge {
         match worker {
             Some(worker) => {
                 for (message, payload) in messages.drain(..) {
-                    if let Err(e) = worker.try_send(MessageToWorker::Message(message, payload)) {
+                    if let Err(e) = worker.send(MessageToWorker::Message(message, payload)) {
                         log::error!("Failed to send message to worker: {:?}", e);
                     }
                 }
