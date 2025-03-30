@@ -115,7 +115,7 @@ impl Downloader {
         let mut stream = res.bytes_stream();
         while let Some(chunk) = stream.next().await {
             let chunk = chunk.unwrap();
-            target.write(&chunk).await.unwrap();
+            target.write_all(&chunk).await.unwrap();
         }
 
         log::debug!("Download complete: {:?}", file_part_path);
