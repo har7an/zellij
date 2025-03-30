@@ -1969,9 +1969,9 @@ checksum = "4facc753ae494aeb6e3c22f839b158aebd4f9270f55cd3c79906c45476c47ab4"
 
 [[package]]
 name = "memchr"
-version = "2.5.0"
+version = "2.7.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2dffe52ecf27772e601905b7522cb4ef790d2cc203488bbd0e2fe85fcb74566d"
+checksum = "78ca9ab1a0babb1e7d5695e3530886289c18cf2f87ec19a575a0abdce112e3a3"
 
 [[package]]
 name = "memfd"
@@ -3373,7 +3373,7 @@ dependencies = [
  "pretty-bytes",
  "serde",
  "serde_json",
- "strip-ansi-escapes",
+ "strip-ansi-escapes 0.1.1",
  "unicode-width 0.1.10",
  "zellij-tile",
 ]
@@ -3385,6 +3385,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "011cbb39cf7c1f62871aea3cc46e5817b0937b49e9447370c93cacbe93a766d8"
 dependencies = [
  "vte 0.10.1",
+]
+
+[[package]]
+name = "strip-ansi-escapes"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2a8f8038e7e7969abb3f1b7c2a811225e9296da208539e0f79c5251d6cac0025"
+dependencies = [
+ "vte 0.14.1",
 ]
 
 [[package]]
@@ -4073,6 +4082,15 @@ checksum = "1aae21c12ad2ec2d168c236f369c38ff332bc1134f7246350dca641437365045"
 dependencies = [
  "utf8parse",
  "vte_generate_state_changes",
+]
+
+[[package]]
+name = "vte"
+version = "0.14.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "231fdcd7ef3037e8330d8e17e61011a2c244126acc0a982f4040ac3f9f0bc077"
+dependencies = [
+ "memchr",
 ]
 
 [[package]]
@@ -5274,7 +5292,7 @@ dependencies = [
  "serde",
  "serde_json",
  "shellexpand 3.0.0",
- "strip-ansi-escapes",
+ "strip-ansi-escapes 0.2.1",
  "strum",
  "strum_macros",
  "tempfile",
