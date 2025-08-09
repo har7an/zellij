@@ -375,7 +375,7 @@ fn swap_layout_status(
             swap_layout_name.make_ascii_uppercase();
             let keycode = swap_layout_keycode(mode_info);
             let swap_layout_name_len = swap_layout_name.len() + 3; // 2 for the arrow separators, one for the screen end buffer
-                                                                   //
+
             macro_rules! style_swap_layout_indicator {
                 ($style_name:ident) => {{
                     (

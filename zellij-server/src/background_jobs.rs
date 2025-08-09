@@ -112,7 +112,7 @@ pub(crate) fn background_jobs_main(
     let current_session_layout = Arc::new(Mutex::new((String::new(), BTreeMap::new())));
     let last_serialization_time = Arc::new(Mutex::new(Instant::now()));
     let serialization_interval = serialization_interval.map(|s| s * 1000); // convert to
-                                                                           // milliseconds
+    // milliseconds
     let last_render_request: Arc<Mutex<Option<Instant>>> = Arc::new(Mutex::new(None));
 
     let http_client = HttpClient::builder()
@@ -652,7 +652,7 @@ fn find_resurrectable_sessions(
                         Err(e) => {
                             if e.kind() == std::io::ErrorKind::NotFound {
                                 return None; // no layout file, cannot resurrect session, let's not
-                                             // list it
+                            // list it
                             } else {
                                 log::error!(
                                     "Failed to read created stamp of resurrection file: {:?}",

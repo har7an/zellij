@@ -352,8 +352,8 @@ impl Page {
         None
     }
     pub fn handle_mouse_hover(&mut self, x: usize, y: usize) -> bool {
-        let hover_cleared = self.clear_hover(); // TODO: do the right thing if the same component was hovered from
-                                                // previous motion
+        // TODO: do the right thing if the same component was hovered from previous motion
+        let hover_cleared = self.clear_hover();
         for rendered_component in &mut self.components_to_render {
             match rendered_component {
                 RenderedComponent::BulletinList(bulletin_list) => {

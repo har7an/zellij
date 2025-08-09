@@ -467,7 +467,7 @@ impl WasmBridge {
         }
 
         let first_plugin_id = *plugin_ids.get(0).unwrap(); // this is safe becaise the above
-                                                           // methods always returns at least 1 id
+        // methods always returns at least 1 id
         let mut loading_indication = LoadingIndication::new(run_plugin.location.to_string());
         self.start_plugin_loading_indication(&plugin_ids, &loading_indication);
         let load_plugin_task = task::spawn({

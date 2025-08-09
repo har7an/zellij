@@ -8376,7 +8376,7 @@ fn when_swapping_tiled_layouts_in_an_undamaged_state_pane_focuses_on_focused_nod
 
 #[test]
 fn when_swapping_tiled_layouts_in_an_undamaged_state_with_no_focus_node_pane_focuses_on_deepest_node()
-{
+ {
     let size = Size {
         cols: 121,
         rows: 20,
@@ -9323,7 +9323,7 @@ fn when_swapping_floating_layouts_in_an_undamaged_state_pane_focuses_on_focused_
 
 #[test]
 fn when_swapping_floating_layouts_in_an_undamaged_state_with_no_focus_node_pane_focuses_on_deepest_node()
-{
+ {
     let size = Size {
         cols: 121,
         rows: 20,

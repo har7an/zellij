@@ -389,7 +389,7 @@ impl MockScreen {
         let tab_index = self.last_opened_tab_index.map(|l| l + 1).unwrap_or(0);
         let should_change_focus_to_new_tab = true;
         std::thread::sleep(std::time::Duration::from_millis(100)); // give time for the async
-                                                                   // render
+        // render
         let _ = self.to_screen.send(ScreenInstruction::NewTab(
             None,
             default_shell,

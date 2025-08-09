@@ -175,8 +175,8 @@ impl ZellijPlugin for State {
             render_controls_line(self.active_screen, width, self.colors, x + 1, rows);
         }
         if self.is_welcome_screen {
-            render_welcome_boundaries(rows, cols); // explicitly done in the end to override some
-                                                   // stuff, see comment in function
+            // explicitly done in the end to override some stuff, see comment in function
+            render_welcome_boundaries(rows, cols);
         }
     }
 }

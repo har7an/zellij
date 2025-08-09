@@ -1180,7 +1180,7 @@ pub fn quit_and_resurrect_session() {
                     let mut step_is_complete = false;
                     if remote_terminal.snapshot_contains("Waiting to run: top") {
                         std::thread::sleep(std::time::Duration::from_millis(5000)); // wait for
-                                                                                    // serialization
+                        // serialization
                         remote_terminal.send_key(&QUIT);
                         step_is_complete = true;
                     }
@@ -1241,7 +1241,7 @@ pub fn quit_and_resurrect_session_with_viewport_serialization() {
                 let mut step_is_complete = false;
                 if remote_terminal.snapshot_contains("Waiting to run: top") {
                     std::thread::sleep(std::time::Duration::from_millis(5000)); // wait for
-                                                                                // serialization
+                    // serialization
                     remote_terminal.send_key(&QUIT);
                     step_is_complete = true;
                 }
@@ -2323,10 +2323,10 @@ pub fn send_command_through_the_cli() {
                     if remote_terminal.snapshot_contains("<Ctrl-c>") {
                         std::thread::sleep(std::time::Duration::from_millis(100));
                         remote_terminal.send_key(&SPACE); // run script - here we use SPACE
-                                                          // instead of the default ENTER because
-                                                          // sending ENTER over SSH can be a little
-                                                          // problematic (read: I couldn't get it
-                                                          // to pass consistently)
+                        // instead of the default ENTER because
+                        // sending ENTER over SSH can be a little
+                        // problematic (read: I couldn't get it
+                        // to pass consistently)
                         step_is_complete = true
                     }
                     step_is_complete
@@ -2341,10 +2341,10 @@ pub fn send_command_through_the_cli() {
                     {
                         std::thread::sleep(std::time::Duration::from_millis(100));
                         remote_terminal.send_key(&SPACE); // re-run script - here we use SPACE
-                                                          // instead of the default ENTER because
-                                                          // sending ENTER over SSH can be a little
-                                                          // problematic (read: I couldn't get it
-                                                          // to pass consistently)
+                        // instead of the default ENTER because
+                        // sending ENTER over SSH can be a little
+                        // problematic (read: I couldn't get it
+                        // to pass consistently)
                         step_is_complete = true
                     }
                     step_is_complete

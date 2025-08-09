@@ -3260,7 +3260,7 @@ pub(crate) fn screen_thread_main(
         // "support_kitty_keyboard_protocol" is true,
         // explicitly_disable_kitty_keyboard_protocol is false and vice versa
         .unwrap_or(false); // by default, we try to support this if the terminal supports it and
-                           // the program running inside a pane requests it
+    // the program running inside a pane requests it
     let stacked_resize = config_options.stacked_resize.unwrap_or(true);
     let web_clients_allowed = config_options
         .web_sharing
@@ -3310,7 +3310,7 @@ pub(crate) fn screen_thread_main(
 
     let mut pending_tab_ids: HashSet<usize> = HashSet::new();
     let mut pending_tab_switches: HashSet<(usize, ClientId)> = HashSet::new(); // usize is the
-                                                                               // tab_index
+    // tab_index
     let mut pending_events_waiting_for_tab: Vec<ScreenInstruction> = vec![];
     let mut pending_events_waiting_for_client: Vec<ScreenInstruction> = vec![];
     let mut plugin_loading_message_cache = HashMap::new();

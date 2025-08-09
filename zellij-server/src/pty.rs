@@ -995,14 +995,11 @@ impl Pty {
             .iter()
             .filter(|f| !f.already_running)
             .map(|f| f.run.clone());
-        let mut new_pane_pids: Vec<(u32, bool, Option<RunCommand>, Result<RawFd>)> = vec![]; // (terminal_id,
-                                                                                             // starts_held,
-                                                                                             // run_command,
-                                                                                             // file_descriptor)
+        // (terminal_id, starts_held, run_command, file_descriptor)
+        let mut new_pane_pids: Vec<(u32, bool, Option<RunCommand>, Result<RawFd>)> = vec![];
+        // same as new_pane_pids
         let mut new_floating_panes_pids: Vec<(u32, bool, Option<RunCommand>, Result<RawFd>)> =
-            vec![]; // same
-                    // as
-                    // new_pane_pids
+            vec![];
         for run_instruction in extracted_run_instructions {
             if let Some(new_pane_data) =
                 self.apply_run_instruction(run_instruction, default_shell.clone())?

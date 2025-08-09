@@ -48,8 +48,9 @@ impl ZellijPlugin for App {
         if self.closing {
             return false;
         }
-        intercept_key_presses(); // we do this here so that all clients (even those connected after
-                                 // load) will have their keys intercepted
+        // we do this here so that all clients (even those connected after load) will have their
+        // keys intercepted
+        intercept_key_presses();
         match event {
             Event::ModeUpdate(mode_info) => self.handle_mode_update(mode_info),
             Event::PaneUpdate(pane_manifest) => self.handle_pane_update(pane_manifest),

@@ -178,8 +178,8 @@ impl NewPluginScreen {
         config_val: &str,
         config_line_max_len: usize,
     ) -> NestedListItem {
-        let config_line_max_len = config_line_max_len.saturating_sub(6); // 3 - line padding, 1 -
-                                                                         // cursor, 2 ": "
+        // 3 for line padding, 1 for the cursor, 2 for literal ": "
+        let config_line_max_len = config_line_max_len.saturating_sub(6);
         let config_key_max_len = config_line_max_len / 2;
         let config_val_max_len = config_line_max_len.saturating_sub(config_key_max_len);
         let config_key = if config_key.chars().count() > config_key_max_len {
@@ -219,8 +219,8 @@ impl NewPluginScreen {
         is_selected: bool,
         config_line_max_len: usize,
     ) -> NestedListItem {
-        let config_line_max_len = config_line_max_len.saturating_sub(5); // 3 - line padding,
-                                                                         // 2 - ": "
+        // 3 for line padding, 1 for the cursor, 2 for literal ": "
+        let config_line_max_len = config_line_max_len.saturating_sub(5);
         let config_key = if config_key.is_empty() {
             "<EMPTY>"
         } else {

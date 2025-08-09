@@ -201,7 +201,7 @@ fn combine_vertically_aligned_panes_to_stack_when_lower_pane_is_stacked() {
 
 #[test]
 fn combine_vertically_aligned_panes_to_stack_when_lower_pane_is_stacked_and_flexible_pane_is_on_top_of_stack()
-{
+ {
     let mut mock_panes: HashMap<PaneId, &mut Box<dyn Pane>> = HashMap::new();
 
     mock_pane!(
@@ -259,7 +259,7 @@ fn combine_vertically_aligned_panes_to_stack_when_lower_pane_is_stacked_and_flex
 
 #[test]
 fn combine_vertically_aligned_panes_to_stack_when_lower_pane_is_stacked_and_flexible_pane_is_mid_stack()
-{
+ {
     let mut mock_panes: HashMap<PaneId, &mut Box<dyn Pane>> = HashMap::new();
 
     mock_pane!(

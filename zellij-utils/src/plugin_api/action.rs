@@ -484,7 +484,7 @@ impl TryFrom<ProtobufAction> for Action {
                     .map_err(|_| "Malformed LaunchOrFocusPlugin payload")?;
                     let should_float = payload.should_float;
                     let _move_to_focused_tab = payload.move_to_focused_tab; // not actually used in
-                                                                            // this action
+                    // this action
                     let should_open_in_place = payload.should_open_in_place;
                     let skip_plugin_cache = payload.skip_plugin_cache;
                     Ok(Action::LaunchPlugin {

@@ -2680,7 +2680,7 @@ impl Tab {
     pub fn set_should_clear_display_before_rendering(&mut self) {
         self.should_clear_display_before_rendering = true;
         self.floating_panes.set_force_render(); // we do this to make sure pinned panes are
-                                                // rendered even if their surface is not visible
+        // rendered even if their surface is not visible
     }
     pub fn is_sync_panes_active(&self) -> bool {
         self.synchronize_is_active
@@ -3627,8 +3627,8 @@ impl Tab {
     pub fn scroll_terminal_up(&mut self, terminal_pane_id: u32) {
         if let Some(terminal_pane) = self.get_pane_with_id_mut(PaneId::Terminal(terminal_pane_id)) {
             let fictitious_client_id = 1; // this is not checked for terminal panes and we
-                                          // don't have an actual client id here
-                                          // TODO: traits were a mistake
+            // don't have an actual client id here
+            // TODO: traits were a mistake
             terminal_pane.scroll_up(1, fictitious_client_id);
         }
     }
@@ -3651,8 +3651,8 @@ impl Tab {
     pub fn scroll_terminal_down(&mut self, terminal_pane_id: u32) {
         if let Some(terminal_pane) = self.get_pane_with_id_mut(PaneId::Terminal(terminal_pane_id)) {
             let fictitious_client_id = 1; // this is not checked for terminal panes and we
-                                          // don't have an actual client id here
-                                          // TODO: traits were a mistake
+            // don't have an actual client id here
+            // TODO: traits were a mistake
             terminal_pane.scroll_down(1, fictitious_client_id);
         }
     }
@@ -3668,9 +3668,9 @@ impl Tab {
     pub fn scroll_terminal_page_up(&mut self, terminal_pane_id: u32) {
         if let Some(terminal_pane) = self.get_pane_with_id_mut(PaneId::Terminal(terminal_pane_id)) {
             let fictitious_client_id = 1; // this is not checked for terminal panes and we
-                                          // don't have an actual client id here
-                                          // TODO: traits were a mistake
-                                          // prevent overflow when row == 0
+            // don't have an actual client id here
+            // TODO: traits were a mistake
+            // prevent overflow when row == 0
             let scroll_rows = terminal_pane.rows().max(1).saturating_sub(1);
             terminal_pane.scroll_up(scroll_rows, fictitious_client_id);
         }
@@ -3696,8 +3696,8 @@ impl Tab {
     pub fn scroll_terminal_page_down(&mut self, terminal_pane_id: u32) {
         if let Some(terminal_pane) = self.get_pane_with_id_mut(PaneId::Terminal(terminal_pane_id)) {
             let fictitious_client_id = 1; // this is not checked for terminal panes and we
-                                          // don't have an actual client id here
-                                          // TODO: traits were a mistake
+            // don't have an actual client id here
+            // TODO: traits were a mistake
             let scroll_rows = terminal_pane.get_content_rows();
             terminal_pane.scroll_down(scroll_rows, fictitious_client_id);
             if !terminal_pane.is_scrolled() {
@@ -3775,8 +3775,8 @@ impl Tab {
             terminal_pane.clear_scroll();
             if let Some(size) = terminal_pane.get_line_number() {
                 let fictitious_client_id = 1; // this is not checked for terminal panes and we
-                                              // don't have an actual client id here
-                                              // TODO: traits were a mistake
+                // don't have an actual client id here
+                // TODO: traits were a mistake
                 terminal_pane.scroll_up(size, fictitious_client_id);
             }
         }
@@ -5001,7 +5001,7 @@ impl Tab {
             // only do this if we're already in this layout, otherwise it might be
             // confusing and not what the user intends
             self.swap_layouts.set_is_floating_damaged(); // we do this so that we won't skip to the
-                                                         // next layout
+            // next layout
             self.relayout_floating_panes(false)?;
         }
         Ok(())
@@ -5035,7 +5035,7 @@ impl Tab {
             // only do this if we're already in this layout, otherwise it might be
             // confusing and not what the user intends
             self.swap_layouts.set_is_tiled_damaged(); // we do this so that we won't skip to the
-                                                      // next layout
+            // next layout
             self.relayout_tiled_panes(false)?;
         }
         Ok(())
@@ -5053,7 +5053,7 @@ impl Tab {
             .add_pane_to_stack_of_pane_id(pane_id, pane, root_pane_id);
         self.set_should_clear_display_before_rendering();
         self.tiled_panes.expand_pane_in_stack(pane_id); // so that it will get focused by all
-                                                        // clients
+        // clients
         self.swap_layouts.set_is_tiled_damaged();
         Ok(())
     }
@@ -5371,8 +5371,8 @@ impl Tab {
             self.explicitly_disable_kitty_keyboard_protocol,
         );
         new_pane.update_name("EDITING SCROLLBACK"); // we do this here and not in the
-                                                    // constructor so it won't be overrided
-                                                    // by the editor
+        // constructor so it won't be overrided
+        // by the editor
         new_pane
     }
     fn insert_scrollback_editor_replaced_pane(

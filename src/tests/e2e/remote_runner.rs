@@ -65,7 +65,7 @@ fn stop_zellij(channel: &mut ssh2::Channel) {
         .unwrap();
     channel.write_all(b"killall -KILL zellij\n").unwrap();
     channel.write_all(b"rm -rf /tmp/*\n").unwrap(); // remove temporary artifacts from previous
-                                                    // tests
+    // tests
     channel.write_all(b"rm -rf /tmp/*\n").unwrap(); // remove temporary artifacts from previous
     channel.write_all(b"rm -rf /tmp/*\n").unwrap(); // remove temporary artifacts from previous
     channel
