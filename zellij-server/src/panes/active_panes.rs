@@ -1,6 +1,6 @@
 use crate::tab::Pane;
 
-use crate::{os_input_output::ServerOsApi, panes::PaneId, ClientId};
+use crate::{ClientId, os_input_output::ServerOsApi, panes::PaneId};
 use std::collections::{BTreeMap, HashMap};
 
 #[derive(Clone)]

@@ -1,9 +1,9 @@
+use crate::plugins::PluginId;
 use crate::plugins::plugin_map::{
     PluginEnv, PluginMap, RunningPlugin, VecDequeInputStream, WriteOutputStream,
 };
-use crate::plugins::plugin_worker::{plugin_worker, RunningWorker};
+use crate::plugins::plugin_worker::{RunningWorker, plugin_worker};
 use crate::plugins::zellij_exports::{wasi_write_object, zellij_exports};
-use crate::plugins::PluginId;
 use highway::{HighwayHash, PortableHash};
 use log::info;
 use prost::Message;
@@ -15,12 +15,12 @@ use std::{
 };
 use url::Url;
 use wasmtime::{Engine, Instance, Linker, Module, Store};
-use wasmtime_wasi::{preview1::WasiP1Ctx, DirPerms, FilePerms, WasiCtxBuilder};
+use wasmtime_wasi::{DirPerms, FilePerms, WasiCtxBuilder, preview1::WasiP1Ctx};
 use zellij_utils::consts::ZELLIJ_PLUGIN_ARTIFACT_DIR;
 
 use crate::{
-    logging_pipe::LoggingPipe, screen::ScreenInstruction, thread_bus::ThreadSenders,
-    ui::loading_indication::LoadingIndication, ClientId,
+    ClientId, logging_pipe::LoggingPipe, screen::ScreenInstruction, thread_bus::ThreadSenders,
+    ui::loading_indication::LoadingIndication,
 };
 
 use zellij_utils::plugin_api::action::ProtobufPluginConfiguration;

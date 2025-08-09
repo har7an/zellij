@@ -726,7 +726,9 @@ impl<'a> TiledPaneGrid<'a> {
         direction: &Direction,
     ) -> Result<BorderAndPaneIds> {
         let err_context = || {
-            format!("failed to find contiguous panes {direction} from pane {id:?} with {alignment} alignment")
+            format!(
+                "failed to find contiguous panes {direction} from pane {id:?} with {alignment} alignment"
+            )
         };
         let input_error =
             anyhow!("Invalid combination of alignment ({alignment}) and direction ({direction})");

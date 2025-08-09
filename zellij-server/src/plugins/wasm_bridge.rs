@@ -1,6 +1,6 @@
 use super::{PluginId, PluginInstruction};
 use crate::plugins::pipes::{
-    apply_pipe_message_to_plugin, pipes_to_block_or_unblock, PendingPipes, PipeStateChange,
+    PendingPipes, PipeStateChange, apply_pipe_message_to_plugin, pipes_to_block_or_unblock,
 };
 use crate::plugins::plugin_loader::PluginLoader;
 use crate::plugins::plugin_map::{AtomicEvent, PluginEnv, PluginMap, RunningPlugin, Subscriptions};
@@ -12,7 +12,7 @@ use async_channel::Sender;
 use async_std::task::{self, JoinHandle};
 use highway::{HighwayHash, PortableHash};
 use log::info;
-use notify_debouncer_full::{notify::RecommendedWatcher, Debouncer, FileIdMap};
+use notify_debouncer_full::{Debouncer, FileIdMap, notify::RecommendedWatcher};
 use std::{
     collections::{BTreeMap, HashMap, HashSet},
     path::PathBuf,
@@ -33,8 +33,8 @@ use prost::Message;
 
 use crate::panes::PaneId;
 use crate::{
-    background_jobs::BackgroundJob, screen::ScreenInstruction, thread_bus::ThreadSenders,
-    ui::loading_indication::LoadingIndication, ClientId, ServerInstruction,
+    ClientId, ServerInstruction, background_jobs::BackgroundJob, screen::ScreenInstruction,
+    thread_bus::ThreadSenders, ui::loading_indication::LoadingIndication,
 };
 use zellij_utils::{
     data::{Event, EventType, PluginCapabilities},
@@ -187,9 +187,9 @@ impl WasmBridge {
                     .next()
                     .copied()
             })
-            .with_context(|| {
-                "Plugins must have a client id, none was provided and none are connected"
-            })?;
+            .with_context(
+                || "Plugins must have a client id, none was provided and none are connected",
+            )?;
 
         let plugin_id = self.next_plugin_id;
 

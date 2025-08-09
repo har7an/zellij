@@ -13,11 +13,11 @@ use zellij_utils::input::layout::Layout;
 use zellij_utils::{consts::VERSION, input::config::Config, input::options::Options};
 
 use crate::os_input_output::ClientOsApi;
+use crate::web_client::ClientOsApiFactory;
 use crate::web_client::control_message::{
     WebClientToWebServerControlMessage, WebClientToWebServerControlMessagePayload,
     WebServerToWebClientControlMessage,
 };
-use crate::web_client::ClientOsApiFactory;
 use zellij_utils::{
     data::{LayoutInfo, Palette},
     errors::ErrorContext,
@@ -1017,7 +1017,9 @@ mod web_client_tests {
                     connection_terminated = true;
                 },
                 _ => {
-                    println!("Connection still active after server abort - this may indicate the cancellation token isn't working as expected in test environment");
+                    println!(
+                        "Connection still active after server abort - this may indicate the cancellation token isn't working as expected in test environment"
+                    );
                     // In test environment, server abort might not trigger cancellation tokens immediately
                     // We'll consider the test successful if we've aborted the server
                     termination_reason = "server_aborted";

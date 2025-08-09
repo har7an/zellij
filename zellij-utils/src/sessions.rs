@@ -1,7 +1,7 @@
 use crate::{
     consts::{
-        session_info_folder_for_session, session_layout_cache_file_name,
-        ZELLIJ_SESSION_INFO_CACHE_DIR, ZELLIJ_SOCK_DIR,
+        ZELLIJ_SESSION_INFO_CACHE_DIR, ZELLIJ_SOCK_DIR, session_info_folder_for_session,
+        session_layout_cache_file_name,
     },
     envs,
     input::layout::Layout,
@@ -415,7 +415,10 @@ pub fn assert_dead_session(name: &str, force: bool) {
                     name
                 )
             } else if exists && force {
-                println!("A session by the name {:?} exists and is active, but will be force killed and deleted.", name);
+                println!(
+                    "A session by the name {:?} exists and is active, but will be force killed and deleted.",
+                    name
+                );
                 return;
             } else {
                 return;
@@ -446,12 +449,18 @@ pub fn assert_session_ne(name: &str) {
         Ok(result) if !result => {
             let resurrectable_sessions = get_resurrectable_session_names();
             if resurrectable_sessions.iter().find(|s| s == &name).is_some() {
-                println!("Session with name {:?} already exists, but is dead. Use the attach command to resurrect it or, the delete-session command to kill it or specify a different name.", name);
+                println!(
+                    "Session with name {:?} already exists, but is dead. Use the attach command to resurrect it or, the delete-session command to kill it or specify a different name.",
+                    name
+                );
             } else {
-                return
+                return;
             }
-        }
-        Ok(_) => println!("Session with name {:?} already exists. Use attach command to connect to it or specify a different name.", name),
+        },
+        Ok(_) => println!(
+            "Session with name {:?} already exists. Use attach command to connect to it or specify a different name.",
+            name
+        ),
         Err(e) => eprintln!("Error occurred: {:?}", e),
     };
     process::exit(1);

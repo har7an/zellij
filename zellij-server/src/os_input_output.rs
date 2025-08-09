@@ -1,11 +1,11 @@
-use crate::{panes::PaneId, ClientId};
+use crate::{ClientId, panes::PaneId};
 
 use async_std::{fs::File as AsyncFile, io::ReadExt, os::unix::io::FromRawFd};
 use interprocess::local_socket::LocalSocketStream;
 use nix::{
-    pty::{openpty, OpenptyResult, Winsize},
+    pty::{OpenptyResult, Winsize, openpty},
     sys::{
-        signal::{kill, Signal},
+        signal::{Signal, kill},
         termios,
     },
     unistd,
@@ -54,8 +54,8 @@ fn set_terminal_size_using_fd(
     height_in_pixels: Option<u16>,
 ) {
     // TODO: do this with the nix ioctl
-    use libc::ioctl;
     use libc::TIOCSWINSZ;
+    use libc::ioctl;
 
     let ws_xpixel = width_in_pixels.unwrap_or(0);
     let ws_ypixel = height_in_pixels.unwrap_or(0);
@@ -913,7 +913,9 @@ impl Clone for Box<dyn ServerOsApi> {
 pub fn get_server_os_input() -> Result<ServerOsInputOutput, nix::Error> {
     let current_termios = termios::tcgetattr(0).ok();
     if current_termios.is_none() {
-        log::warn!("Starting a server without a controlling terminal, using the default termios configuration.");
+        log::warn!(
+            "Starting a server without a controlling terminal, using the default termios configuration."
+        );
     }
     let orig_termios = Arc::new(Mutex::new(current_termios));
     Ok(ServerOsInputOutput {

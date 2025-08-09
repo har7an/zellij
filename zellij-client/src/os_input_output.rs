@@ -6,12 +6,12 @@ use signal_hook;
 use zellij_utils::pane_size::Size;
 
 use interprocess::local_socket::LocalSocketStream;
-use mio::{unix::SourceFd, Events, Interest, Poll, Token};
+use mio::{Events, Interest, Poll, Token, unix::SourceFd};
 use nix::pty::Winsize;
 use nix::sys::termios;
 use signal_hook::{consts::signal::*, iterator::Signals};
-use std::io::prelude::*;
 use std::io::IsTerminal;
+use std::io::prelude::*;
 use std::os::unix::io::RawFd;
 use std::path::Path;
 use std::sync::{Arc, Mutex};
@@ -45,8 +45,8 @@ fn unset_raw_mode(pid: RawFd, orig_termios: termios::Termios) -> Result<(), nix:
 
 pub(crate) fn get_terminal_size_using_fd(fd: RawFd) -> Size {
     // TODO: do this with the nix ioctl
-    use libc::ioctl;
     use libc::TIOCGWINSZ;
+    use libc::ioctl;
 
     let mut winsize = Winsize {
         ws_row: 0,

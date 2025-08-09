@@ -1,10 +1,10 @@
 //! Composite pipelines for the build system.
 //!
 //! Defines multiple "pipelines" that run specific individual steps in sequence.
+use crate::{WorkspaceMember, flags};
 use crate::{build, clippy, format, metadata, test};
-use crate::{flags, WorkspaceMember};
 use anyhow::Context;
-use xshell::{cmd, Shell};
+use xshell::{Shell, cmd};
 
 /// Perform a default build.
 ///

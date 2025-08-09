@@ -3,22 +3,23 @@ use std::net::IpAddr;
 use std::{fs::File, io::prelude::*, path::PathBuf, process, time::Duration};
 
 #[cfg(feature = "web_server_capability")]
-use isahc::{config::RedirectPolicy, prelude::*, HttpClient, Request};
+use isahc::{HttpClient, Request, config::RedirectPolicy, prelude::*};
 
 use nix;
 use zellij_client::{
+    ClientInfo,
     old_config_converter::{
         config_yaml_to_config_kdl, convert_old_yaml_files, layout_yaml_to_layout_kdl,
     },
     os_input_output::get_client_os_input,
-    start_client as start_client_impl, ClientInfo,
+    start_client as start_client_impl,
 };
 use zellij_utils::sessions::{
-    assert_dead_session, assert_session, assert_session_ne, delete_session as delete_session_impl,
-    generate_unique_session_name, get_active_session, get_resurrectable_sessions, get_sessions,
-    get_sessions_sorted_by_mtime, kill_session as kill_session_impl, match_session_name,
-    print_sessions, print_sessions_with_index, resurrection_layout, session_exists, ActiveSession,
-    SessionNameMatch,
+    ActiveSession, SessionNameMatch, assert_dead_session, assert_session, assert_session_ne,
+    delete_session as delete_session_impl, generate_unique_session_name, get_active_session,
+    get_resurrectable_sessions, get_sessions, get_sessions_sorted_by_mtime,
+    kill_session as kill_session_impl, match_session_name, print_sessions,
+    print_sessions_with_index, resurrection_layout, session_exists,
 };
 
 use zellij_utils::consts::session_layout_cache_file_name;
@@ -410,7 +411,9 @@ pub(crate) fn send_action_to_session(
             } else if let Ok(session_name) = envs::get_session_name() {
                 attach_with_cli_client(cli_action, &session_name, config);
             } else {
-                eprintln!("Please specify the session name to send actions to. The following sessions are active:");
+                eprintln!(
+                    "Please specify the session name to send actions to. The following sessions are active:"
+                );
                 list_sessions(false, false, true);
                 std::process::exit(1);
             }
@@ -571,7 +574,9 @@ fn attach_with_session_name(
             },
             ActiveSession::One(session_name) => ClientInfo::Attach(session_name, config_options),
             ActiveSession::Many => {
-                println!("Please specify the session to attach to, either by using the full name or a unique prefix.\nThe following sessions are active:");
+                println!(
+                    "Please specify the session to attach to, either by using the full name or a unique prefix.\nThe following sessions are active:"
+                );
                 list_sessions(false, false, true);
                 process::exit(1);
             },
@@ -717,7 +722,10 @@ pub(crate) fn start_client(opts: CliArgs) {
 
             if let Ok(val) = std::env::var(envs::SESSION_NAME_ENV_KEY) {
                 if val == *client.get_session_name() {
-                    panic!("You are trying to attach to the current session (\"{}\"). This is not supported.", val);
+                    panic!(
+                        "You are trying to attach to the current session (\"{}\"). This is not supported.",
+                        val
+                    );
                 }
             }
 
@@ -771,7 +779,10 @@ pub(crate) fn start_client(opts: CliArgs) {
                         // `zellij_server::terminal_bytes::listen` task, flooding the server and
                         // clients with infinite `Render` requests.
                         if *session_name == val {
-                            eprintln!("You are trying to attach to the current session (\"{}\"). Zellij does not support nesting a session in itself.", session_name);
+                            eprintln!(
+                                "You are trying to attach to the current session (\"{}\"). Zellij does not support nesting a session in itself.",
+                                session_name
+                            );
                             process::exit(1);
                         }
                     }

@@ -190,11 +190,7 @@ impl RunPluginOrAlias {
                             // caller_cwd is a special attribute given to alias and should not be
                             // considered when weighing configuration equivalency
                             to_compare.remove("caller_cwd");
-                            if to_compare.is_empty() {
-                                None
-                            } else {
-                                Some(c)
-                            }
+                            if to_compare.is_empty() { None } else { Some(c) }
                         })
             },
             (

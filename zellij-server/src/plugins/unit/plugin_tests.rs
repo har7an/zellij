@@ -1,6 +1,6 @@
 use super::plugin_thread_main;
 use crate::screen::ScreenInstruction;
-use crate::{channels::SenderWithContext, thread_bus::Bus, ServerInstruction};
+use crate::{ServerInstruction, channels::SenderWithContext, thread_bus::Bus};
 use insta::assert_snapshot;
 use lazy_static::lazy_static;
 use std::collections::BTreeMap;

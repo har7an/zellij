@@ -1,6 +1,6 @@
 use crate::{
     panes::PaneId,
-    tab::{Pane, MIN_TERMINAL_HEIGHT},
+    tab::{MIN_TERMINAL_HEIGHT, Pane},
 };
 use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};

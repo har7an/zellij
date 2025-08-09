@@ -1,11 +1,11 @@
 //! Main input logic.
 use crate::{
-    os_input_output::ClientOsApi, stdin_ansi_parser::AnsiStdinInstruction, ClientId,
-    ClientInstruction, CommandIsExecuting, InputInstruction,
+    ClientId, ClientInstruction, CommandIsExecuting, InputInstruction,
+    os_input_output::ClientOsApi, stdin_ansi_parser::AnsiStdinInstruction,
 };
 use termwiz::input::{InputEvent, Modifiers, MouseButtons, MouseEvent as TermwizMouseEvent};
 use zellij_utils::{
-    channels::{Receiver, SenderWithContext, OPENCALLS},
+    channels::{OPENCALLS, Receiver, SenderWithContext},
     data::{InputMode, KeyWithModifier},
     errors::{ContextType, ErrorContext, FatalError},
     input::{

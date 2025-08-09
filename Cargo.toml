@@ -60,6 +60,7 @@ members = [
 ]
 
 [workspace.package]
+# NOTE: See also `style_edition` in `.rustfmt.toml`
 edition = "2021"
 license = "MIT"
 repository = "https://github.com/zellij-org/zellij"

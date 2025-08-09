@@ -4,10 +4,10 @@ use crate::panes::sixel::SixelImageStore;
 use crate::pty::NewPanePlacement;
 use crate::screen::CopyOptions;
 use crate::{
+    ClientId,
     os_input_output::{AsyncReader, Pid, ServerOsApi},
     panes::PaneId,
     thread_bus::ThreadSenders,
-    ClientId,
 };
 use std::net::{IpAddr, Ipv4Addr};
 use std::path::PathBuf;

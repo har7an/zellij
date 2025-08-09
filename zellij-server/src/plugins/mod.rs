@@ -17,7 +17,7 @@ use wasmtime::Engine;
 use crate::panes::PaneId;
 use crate::screen::ScreenInstruction;
 use crate::session_layout_metadata::SessionLayoutMetadata;
-use crate::{pty::PtyInstruction, thread_bus::Bus, ClientId, ServerInstruction};
+use crate::{ClientId, ServerInstruction, pty::PtyInstruction, thread_bus::Bus};
 
 pub use wasm_bridge::PluginRenderAsset;
 use wasm_bridge::WasmBridge;
@@ -29,7 +29,7 @@ use zellij_utils::{
         PermissionStatus, PermissionType, PipeMessage, PipeSource, PluginCapabilities,
         WebServerStatus,
     },
-    errors::{prelude::*, ContextType, PluginContext},
+    errors::{ContextType, PluginContext, prelude::*},
     input::{
         command::TerminalAction,
         keybinds::Keybinds,
@@ -862,7 +862,9 @@ pub(crate) fn plugin_thread_main(
                         ));
                     },
                     (Some(plugin_url), Some(destination_plugin_id)) => {
-                        log::warn!("Message contains both a destination plugin url: {plugin_url} and a destination plugin id: {destination_plugin_id}, ignoring the url and prioritizing the id");
+                        log::warn!(
+                            "Message contains both a destination plugin url: {plugin_url} and a destination plugin id: {destination_plugin_id}, ignoring the url and prioritizing the id"
+                        );
                         let is_private = true;
                         pipe_messages.push((
                             Some(destination_plugin_id),

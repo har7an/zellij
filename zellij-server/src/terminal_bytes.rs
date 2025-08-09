@@ -9,7 +9,7 @@ use std::{
     time::{Duration, Instant},
 };
 use zellij_utils::{
-    errors::{get_current_ctx, prelude::*, ContextType},
+    errors::{ContextType, get_current_ctx, prelude::*},
     logging::debug_to_file,
 };
 

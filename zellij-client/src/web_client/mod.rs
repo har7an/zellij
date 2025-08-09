@@ -19,19 +19,18 @@ use std::{
 };
 
 use axum::{
-    middleware,
+    Router, middleware,
     routing::{any, get, post},
-    Router,
 };
 
-use axum_server::tls_rustls::RustlsConfig;
 use axum_server::Handle;
+use axum_server::tls_rustls::RustlsConfig;
 
 use daemonize::{self, Outcome};
-use nix::sys::stat::{umask, Mode};
+use nix::sys::stat::{Mode, umask};
 
 use interprocess::unnamed_pipe::pipe;
-use std::io::{prelude::*, BufRead, BufReader};
+use std::io::{BufRead, BufReader, prelude::*};
 use tokio::runtime::Runtime;
 use zellij_utils::input::{config::Config, options::Options};
 
@@ -276,7 +275,7 @@ fn daemonize_web_server(
                     _ => {
                         return Err(
                             "Must specify both web_server_cert and web_server_key".to_owned()
-                        )
+                        );
                     },
                 };
 

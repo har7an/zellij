@@ -1,12 +1,12 @@
-use ansi_term::{unstyled_len, ANSIStrings};
+use ansi_term::{ANSIStrings, unstyled_len};
 use zellij_tile::prelude::actions::Action;
 use zellij_tile::prelude::*;
 
 use crate::color_elements;
-use crate::{
-    action_key, action_key_group, get_common_modifiers, style_key_with_modifier, TO_NORMAL,
-};
 use crate::{ColoredElements, LinePart};
+use crate::{
+    TO_NORMAL, action_key, action_key_group, get_common_modifiers, style_key_with_modifier,
+};
 
 #[derive(Debug)]
 pub struct KeyShortcut {

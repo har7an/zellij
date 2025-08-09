@@ -30,7 +30,7 @@ use termwiz::input::InputEvent;
 use zellij_utils::cli::CliArgs;
 use zellij_utils::{
     channels::{self, ChannelWithContext, SenderWithContext},
-    consts::{set_permissions, ZELLIJ_SOCK_DIR},
+    consts::{ZELLIJ_SOCK_DIR, set_permissions},
     data::{ClientId, ConnectToSession, KeyWithModifier, LayoutInfo},
     envs,
     errors::{ClientContext, ContextType, ErrorInstruction},

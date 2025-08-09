@@ -22,7 +22,7 @@ use zellij_utils::input::options::Clipboard;
 use zellij_utils::pane_size::{Size, SizeInPixels};
 use zellij_utils::shared::clean_string_from_control_and_linebreak;
 use zellij_utils::{
-    consts::{session_info_folder_for_session, ZELLIJ_SOCK_DIR},
+    consts::{ZELLIJ_SOCK_DIR, session_info_folder_for_session},
     envs::set_session_name,
     input::command::TerminalAction,
     input::layout::{
@@ -41,18 +41,18 @@ use crate::panes::terminal_pane::{BRACKETED_PASTE_BEGIN, BRACKETED_PASTE_END};
 use crate::session_layout_metadata::{PaneLayoutMetadata, SessionLayoutMetadata};
 
 use crate::{
+    ClientId, ServerInstruction,
     output::Output,
-    panes::sixel::SixelImageStore,
     panes::PaneId,
+    panes::sixel::SixelImageStore,
     plugins::{PluginId, PluginInstruction, PluginRenderAsset},
-    pty::{get_default_shell, ClientTabIndexOrPaneId, NewPanePlacement, PtyInstruction, VteBytes},
+    pty::{ClientTabIndexOrPaneId, NewPanePlacement, PtyInstruction, VteBytes, get_default_shell},
     tab::{SuppressedPanes, Tab},
     thread_bus::Bus,
     ui::{
         loading_indication::LoadingIndication,
         overlay::{Overlay, OverlayWindow},
     },
-    ClientId, ServerInstruction,
 };
 use zellij_utils::{
     data::{Event, InputMode, ModeInfo, Palette, PaletteColor, PluginCapabilities, Style, TabInfo},
@@ -971,8 +971,8 @@ impl Screen {
     ) -> Result<()> {
         let err_context = || {
             format!(
-            "Failed to switch to active tab at position {new_tab_pos} for client id: {client_id:?}"
-        )
+                "Failed to switch to active tab at position {new_tab_pos} for client id: {client_id:?}"
+            )
         };
 
         if let Some(new_tab) = self.tabs.values().find(|t| t.position == new_tab_pos) {
@@ -4806,7 +4806,9 @@ pub(crate) fn screen_thread_main(
                             client_tab_index_or_pane_id,
                         )?;
                     } else {
-                        log::error!("Must have pane id to replace or connected client_id if replacing a pane");
+                        log::error!(
+                            "Must have pane id to replace or connected client_id if replacing a pane"
+                        );
                     }
                 } else if let Some(client_id) = client_id {
                     active_tab_and_connected_client_id!(screen, client_id, |active_tab: &mut Tab, _client_id: ClientId| {
@@ -4911,8 +4913,8 @@ pub(crate) fn screen_thread_main(
                         },
                         None => {
                             log::error!(
-                            "Could not find an active tab - is there at least 1 connected user?"
-                        );
+                                "Could not find an active tab - is there at least 1 connected user?"
+                            );
                         },
                     }
                 },
@@ -5375,7 +5377,9 @@ pub(crate) fn screen_thread_main(
                         } else {
                             // this is because to do this with plugins, we need the client_id -
                             // which we do not have (yet?) in this context...
-                            log::error!("Currently only terminal panes are supported for scrolling to bottom");
+                            log::error!(
+                                "Currently only terminal panes are supported for scrolling to bottom"
+                            );
                         }
                         break;
                     }

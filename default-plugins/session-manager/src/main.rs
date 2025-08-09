@@ -8,12 +8,12 @@ use zellij_tile::prelude::*;
 
 use new_session_info::NewSessionInfo;
 use ui::{
+    SessionUiInfo,
     components::{
-        render_controls_line, render_error, render_new_session_block, render_prompt,
-        render_renaming_session_screen, render_screen_toggle, Colors,
+        Colors, render_controls_line, render_error, render_new_session_block, render_prompt,
+        render_renaming_session_screen, render_screen_toggle,
     },
     welcome_screen::{render_banner, render_welcome_boundaries},
-    SessionUiInfo,
 };
 
 use resurrectable_sessions::ResurrectableSessions;

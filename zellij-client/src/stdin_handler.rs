@@ -1,7 +1,7 @@
+use crate::InputInstruction;
 use crate::keyboard_parser::KittyKeyboardParser;
 use crate::os_input_output::ClientOsApi;
 use crate::stdin_ansi_parser::StdinAnsiParser;
-use crate::InputInstruction;
 use std::sync::{Arc, Mutex};
 use termwiz::input::{InputEvent, InputParser, MouseButtons};
 use zellij_utils::channels::SenderWithContext;

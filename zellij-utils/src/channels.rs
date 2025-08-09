@@ -3,9 +3,9 @@
 use async_std::task_local;
 use std::cell::RefCell;
 
-use crate::errors::{get_current_ctx, ErrorContext};
+use crate::errors::{ErrorContext, get_current_ctx};
 pub use crossbeam::channel::{
-    bounded, unbounded, Receiver, RecvError, Select, SendError, Sender, TrySendError,
+    Receiver, RecvError, Select, SendError, Sender, TrySendError, bounded, unbounded,
 };
 
 /// An [MPSC](mpsc) asynchronous channel with added error context.

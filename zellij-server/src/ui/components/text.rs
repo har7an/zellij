@@ -1,5 +1,5 @@
-use super::{is_too_wide, parse_indices, parse_opaque, parse_selected, Coordinates};
-use crate::panes::{terminal_character::CharacterStyles, AnsiCode};
+use super::{Coordinates, is_too_wide, parse_indices, parse_opaque, parse_selected};
+use crate::panes::{AnsiCode, terminal_character::CharacterStyles};
 use zellij_utils::{
     data::{PaletteColor, Style, StyleDeclaration},
     shared::ansi_len,

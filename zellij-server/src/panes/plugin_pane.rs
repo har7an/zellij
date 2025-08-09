@@ -1,12 +1,13 @@
 use std::collections::{BTreeSet, HashMap};
 use std::time::Instant;
 
+use crate::ClientId;
 use crate::output::{CharacterChunk, SixelImageChunk};
 use crate::panes::{
+    LinkHandler, PaneId,
     grid::Grid,
     sixel::SixelImageStore,
     terminal_pane::{BRACKETED_PASTE_BEGIN, BRACKETED_PASTE_END},
-    LinkHandler, PaneId,
 };
 use crate::plugins::PluginInstruction;
 use crate::pty::VteBytes;
@@ -15,7 +16,6 @@ use crate::ui::{
     loading_indication::LoadingIndication,
     pane_boundaries_frame::{FrameParams, PaneFrame},
 };
-use crate::ClientId;
 use std::cell::RefCell;
 use std::rc::Rc;
 use vte;

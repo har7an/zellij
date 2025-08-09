@@ -1,5 +1,5 @@
-use crate::panes::PaneId;
 use crate::ClientId;
+use crate::panes::PaneId;
 use std::collections::{BTreeMap, HashMap};
 use std::path::PathBuf;
 use zellij_utils::common_path::common_path_all;
@@ -9,8 +9,8 @@ use zellij_utils::{
     input::layout::{Layout, Run, RunPlugin, RunPluginOrAlias},
     input::plugins::PluginAliases,
     session_serialization::{
-        extract_command_and_args, extract_edit_and_line_number, extract_plugin_and_config,
-        GlobalLayoutManifest, PaneLayoutManifest, TabLayoutManifest,
+        GlobalLayoutManifest, PaneLayoutManifest, TabLayoutManifest, extract_command_and_args,
+        extract_edit_and_line_number, extract_plugin_and_config,
     },
 };
 

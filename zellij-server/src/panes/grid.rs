@@ -35,8 +35,8 @@ use crate::panes::link_handler::LinkHandler;
 use crate::panes::search::SearchResult;
 use crate::panes::selection::Selection;
 use crate::panes::terminal_character::{
-    AnsiCode, CharsetIndex, Cursor, CursorShape, RcCharacterStyles, StandardCharset,
-    TerminalCharacter, EMPTY_TERMINAL_CHARACTER,
+    AnsiCode, CharsetIndex, Cursor, CursorShape, EMPTY_TERMINAL_CHARACTER, RcCharacterStyles,
+    StandardCharset, TerminalCharacter,
 };
 use crate::ui::components::UiComponentParser;
 
@@ -2620,14 +2620,22 @@ impl Perform for Grid {
                                         format!(
                                             "\u{1b}]{};rgb:{1:02x}{1:02x}/{2:02x}{2:02x}/{3:02x}{3:02x}{4}",
                                             // dynamic_code, color.r, color.g, color.b, terminator
-                                            dynamic_code, r, g, b, terminator
+                                            dynamic_code,
+                                            r,
+                                            g,
+                                            b,
+                                            terminator
                                         )
                                     },
                                     _ => {
                                         format!(
                                             "\u{1b}]{};rgb:{1:02x}{1:02x}/{2:02x}{2:02x}/{3:02x}{3:02x}{4}",
                                             // dynamic_code, color.r, color.g, color.b, terminator
-                                            dynamic_code, 0, 0, 0, terminator
+                                            dynamic_code,
+                                            0,
+                                            0,
+                                            0,
+                                            terminator
                                         )
                                     },
                                 };

@@ -1,8 +1,8 @@
 mod kdl_layout_parser;
 use crate::data::{
-    BareKey, Direction, FloatingPaneCoordinates, InputMode, KeyWithModifier, LayoutInfo,
-    MultiplayerColors, Palette, PaletteColor, PaneInfo, PaneManifest, PermissionType, Resize,
-    SessionInfo, StyleDeclaration, Styling, TabInfo, WebSharing, DEFAULT_STYLES,
+    BareKey, DEFAULT_STYLES, Direction, FloatingPaneCoordinates, InputMode, KeyWithModifier,
+    LayoutInfo, MultiplayerColors, Palette, PaletteColor, PaneInfo, PaneManifest, PermissionType,
+    Resize, SessionInfo, StyleDeclaration, Styling, TabInfo, WebSharing,
 };
 use crate::envs::EnvironmentVariables;
 use crate::home::{find_default_config_dir, get_layout_dir};
@@ -159,9 +159,7 @@ macro_rules! kdl_first_entry_as_bool {
 
 #[macro_export]
 macro_rules! entry_count {
-    ( $node:expr ) => {{
-        $node.entries().iter().len()
-    }};
+    ( $node:expr ) => {{ $node.entries().iter().len() }};
 }
 
 #[macro_export]
@@ -176,7 +174,7 @@ macro_rules! parse_kdl_action_char_or_string_arguments {
                         format!("All entries for action '{}' must be strings", $action_name),
                         kdl_entry.span().offset(),
                         kdl_entry.span().len(),
-                    ))
+                    ));
                 },
             }
         }
@@ -453,7 +451,7 @@ impl Action {
                         format!("Unknown InputMode '{}'", string),
                         action_node.span().offset(),
                         action_node.span().len(),
-                    ))
+                    ));
                 },
             },
             "Resize" => {
@@ -467,12 +465,12 @@ impl Action {
                             Err(_) => {
                                 return Err(ConfigError::new_kdl_error(
                                     format!(
-                                    "failed to read either of resize type or direction from '{}'",
-                                    word
-                                ),
+                                        "failed to read either of resize type or direction from '{}'",
+                                        word
+                                    ),
                                     action_node.span().offset(),
                                     action_node.span().len(),
-                                ))
+                                ));
                             },
                         },
                     }
@@ -2185,7 +2183,7 @@ macro_rules! kdl_get_bool_property_or_child_value_with_error {
                                     e.value()
                                 ),
                                 e
-                            ))
+                            ));
                         },
                     },
                     None => {
@@ -2275,7 +2273,7 @@ macro_rules! kdl_get_string_property_or_child_value_with_error {
                                     e.value()
                                 ),
                                 e
-                            ))
+                            ));
                         },
                     },
                     None => {
@@ -2611,8 +2609,8 @@ impl Options {
         }
     }
     fn default_shell_to_kdl(&self, add_comments: bool) -> Option<KdlNode> {
-        let comment_text =
-            format!("{}\n{}\n{}\n{}",
+        let comment_text = format!(
+            "{}\n{}\n{}\n{}",
             " ",
             "// Choose the path to the default shell that zellij will use for opening new panes",
             "// Default: $SHELL",
@@ -2945,7 +2943,8 @@ impl Options {
         }
     }
     fn copy_clipboard_to_kdl(&self, add_comments: bool) -> Option<KdlNode> {
-        let comment_text = format!("{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}",
+        let comment_text = format!(
+            "{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}",
             " ",
             "// Choose the destination for copied text",
             "// Allows using the primary selection buffer (on x11/wayland) instead of the system clipboard.",
@@ -3093,7 +3092,8 @@ impl Options {
         }
     }
     fn auto_layout_to_kdl(&self, add_comments: bool) -> Option<KdlNode> {
-        let comment_text = format!("{}\n{}\n{}\n{}\n{}\n{}",
+        let comment_text = format!(
+            "{}\n{}\n{}\n{}\n{}\n{}",
             " ",
             "// Toggle between having Zellij lay out panes according to a predefined set of layouts whenever possible",
             "// Options:",
@@ -3122,7 +3122,8 @@ impl Options {
         }
     }
     fn session_serialization_to_kdl(&self, add_comments: bool) -> Option<KdlNode> {
-        let comment_text = format!("{}\n{}\n{}\n{}\n{}\n{}",
+        let comment_text = format!(
+            "{}\n{}\n{}\n{}\n{}\n{}",
             " ",
             "// Whether sessions should be serialized to the cache folder (including their tabs/panes, cwds and running commands) so that they can later be resurrected",
             "// Options:",
@@ -3181,7 +3182,8 @@ impl Options {
         }
     }
     fn scrollback_lines_to_serialize_to_kdl(&self, add_comments: bool) -> Option<KdlNode> {
-        let comment_text = format!("{}\n{}\n{}\n{}\n{}",
+        let comment_text = format!(
+            "{}\n{}\n{}\n{}\n{}",
             " ",
             "// Scrollback lines to serialize along with the pane viewport when serializing sessions, 0",
             "// defaults to the scrollback size. If this number is higher than the scrollback size, it will",
@@ -3264,7 +3266,8 @@ impl Options {
         }
     }
     fn disable_session_metadata_to_kdl(&self, add_comments: bool) -> Option<KdlNode> {
-        let comment_text = format!("{}\n{}\n{}\n{}\n{}\n{}",
+        let comment_text = format!(
+            "{}\n{}\n{}\n{}\n{}\n{}",
             " ",
             "// Enable or disable writing of session metadata to disk (if disabled, other sessions might not know",
             "// metadata info on this session)",
@@ -3293,7 +3296,8 @@ impl Options {
         }
     }
     fn support_kitty_keyboard_protocol_to_kdl(&self, add_comments: bool) -> Option<KdlNode> {
-        let comment_text = format!("{}\n{}\n{}\n{}\n{}",
+        let comment_text = format!(
+            "{}\n{}\n{}\n{}\n{}",
             " ",
             "// Enable or disable support for the enhanced Kitty Keyboard Protocol (the host terminal must also support it)",
             "// (Requires restart)",
@@ -3854,11 +3858,13 @@ impl Layout {
 fn kdl_layout_error(kdl_error: kdl::KdlError, file_name: String, raw_layout: &str) -> ConfigError {
     let error_message = match kdl_error.kind {
         kdl::KdlErrorKind::Context("valid node terminator") => {
-            format!("Failed to deserialize KDL node. \nPossible reasons:\n{}\n{}\n{}\n{}",
-            "- Missing `;` after a node name, eg. { node; another_node; }",
-            "- Missing quotations (\") around an argument node eg. { first_node \"argument_node\"; }",
-            "- Missing an equal sign (=) between node arguments on a title line. eg. argument=\"value\"",
-            "- Found an extraneous equal sign (=) between node child arguments and their values. eg. { argument=\"value\" }")
+            format!(
+                "Failed to deserialize KDL node. \nPossible reasons:\n{}\n{}\n{}\n{}",
+                "- Missing `;` after a node name, eg. { node; another_node; }",
+                "- Missing quotations (\") around an argument node eg. { first_node \"argument_node\"; }",
+                "- Missing an equal sign (=) between node arguments on a title line. eg. argument=\"value\"",
+                "- Found an extraneous equal sign (=) between node child arguments and their values. eg. { argument=\"value\" }"
+            )
         },
         _ => String::from(kdl_error.help.unwrap_or("Kdl Deserialization Error")),
     };

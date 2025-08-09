@@ -1,5 +1,5 @@
-use crate::plugins::plugin_worker::MessageToWorker;
 use crate::plugins::PluginId;
+use crate::plugins::plugin_worker::MessageToWorker;
 use bytes::Bytes;
 use std::io::Write;
 use std::{
@@ -14,7 +14,7 @@ use wasmtime_wasi::{
     Subscribe,
 };
 
-use crate::{thread_bus::ThreadSenders, ClientId};
+use crate::{ClientId, thread_bus::ThreadSenders};
 
 use async_channel::Sender;
 use zellij_utils::{

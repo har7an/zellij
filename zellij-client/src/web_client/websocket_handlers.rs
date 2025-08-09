@@ -10,8 +10,8 @@ use crate::web_client::types::{AppState, TerminalParams};
 
 use axum::{
     extract::{
-        ws::{Message, WebSocket, WebSocketUpgrade},
         Path as AxumPath, Query, State,
+        ws::{Message, WebSocket, WebSocketUpgrade},
     },
     response::IntoResponse,
 };

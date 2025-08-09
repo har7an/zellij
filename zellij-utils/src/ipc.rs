@@ -1,7 +1,7 @@
 //! IPC stuff for starting to split things into a client and server model.
 use crate::{
     data::{ClientId, ConnectToSession, KeyWithModifier, Style},
-    errors::{prelude::*, ErrorContext},
+    errors::{ErrorContext, prelude::*},
     input::{actions::Action, cli_assets::CliAssets},
     pane_size::{Size, SizeInPixels},
 };

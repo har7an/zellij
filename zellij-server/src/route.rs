@@ -3,12 +3,12 @@ use std::sync::{Arc, RwLock};
 
 use crate::thread_bus::ThreadSenders;
 use crate::{
+    ServerInstruction, SessionMetaData, SessionState,
     os_input_output::ServerOsApi,
     panes::PaneId,
     plugins::PluginInstruction,
     pty::{ClientTabIndexOrPaneId, NewPanePlacement, PtyInstruction},
     screen::ScreenInstruction,
-    ServerInstruction, SessionMetaData, SessionState,
 };
 use std::thread;
 use std::time::Duration;
@@ -879,7 +879,9 @@ pub(crate) fn route_action(
             if let Some(name) = name.take() {
                 let should_open_in_place = in_place.unwrap_or(false);
                 if should_open_in_place && pane_id.is_none() {
-                    log::error!("Was asked to open a new plugin in-place, but cannot identify the pane id... is the ZELLIJ_PANE_ID variable set?");
+                    log::error!(
+                        "Was asked to open a new plugin in-place, but cannot identify the pane id... is the ZELLIJ_PANE_ID variable set?"
+                    );
                 }
                 let pane_id_to_replace = if should_open_in_place { pane_id } else { None };
                 senders
@@ -1290,7 +1292,9 @@ pub(crate) fn route_thread_main(
                 consecutive_unknown_messages_received += 1;
                 log::error!("Received unknown message from client.");
                 if consecutive_unknown_messages_received >= 1000 {
-                    log::error!("Client sent over 1000 consecutive unknown messages, this is probably an infinite loop, logging client out");
+                    log::error!(
+                        "Client sent over 1000 consecutive unknown messages, this is probably an infinite loop, logging client out"
+                    );
                     let _ = os_input.send_to_client(
                         client_id,
                         ServerToClientMsg::Exit {

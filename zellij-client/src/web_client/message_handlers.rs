@@ -10,7 +10,7 @@ use zellij_utils::{
 };
 
 use axum::extract::ws::{CloseFrame, Message, WebSocket};
-use futures::{prelude::stream::SplitSink, SinkExt};
+use futures::{SinkExt, prelude::stream::SplitSink};
 use termwiz::input::{InputEvent, InputParser};
 use tokio::sync::mpsc::UnboundedReceiver;
 use tokio_util::sync::CancellationToken;

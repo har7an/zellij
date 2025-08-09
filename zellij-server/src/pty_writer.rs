@@ -1,4 +1,4 @@
-use zellij_utils::errors::{prelude::*, ContextType, PtyWriteContext};
+use zellij_utils::errors::{ContextType, PtyWriteContext, prelude::*};
 
 use crate::thread_bus::Bus;
 

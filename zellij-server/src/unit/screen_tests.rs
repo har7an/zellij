@@ -1,18 +1,18 @@
-use super::{screen_thread_main, CopyOptions, Screen, ScreenInstruction};
+use super::{CopyOptions, Screen, ScreenInstruction, screen_thread_main};
 use crate::panes::PaneId;
 use crate::{
+    ClientId, ServerInstruction, SessionMetaData, ThreadSenders,
     channels::SenderWithContext,
     os_input_output::{AsyncReader, Pid, ServerOsApi},
     route::route_action,
     thread_bus::Bus,
-    ClientId, ServerInstruction, SessionMetaData, ThreadSenders,
 };
 use insta::assert_snapshot;
 use std::net::{IpAddr, Ipv4Addr};
 use std::path::PathBuf;
 use zellij_utils::cli::CliAction;
 use zellij_utils::data::{Event, Resize, Style, WebSharing};
-use zellij_utils::errors::{prelude::*, ErrorContext};
+use zellij_utils::errors::{ErrorContext, prelude::*};
 use zellij_utils::input::actions::Action;
 use zellij_utils::input::command::{RunCommand, TerminalAction};
 use zellij_utils::input::config::Config;
@@ -1647,7 +1647,15 @@ fn group_panes_following_focus() {
             .move_focus_up(client_id)
             .unwrap();
         let _ = screen.add_active_pane_to_group_if_marking(&client_id);
-        assert_eq!(screen.current_pane_group.borrow().clone_inner().get(&client_id), Some(&vec![PaneId::Terminal(4), PaneId::Terminal(3)]), "Pane Id of newly focused pane not added to group after the group marking was toggled off");
+        assert_eq!(
+            screen
+                .current_pane_group
+                .borrow()
+                .clone_inner()
+                .get(&client_id),
+            Some(&vec![PaneId::Terminal(4), PaneId::Terminal(3)]),
+            "Pane Id of newly focused pane not added to group after the group marking was toggled off"
+        );
     }
 }
 

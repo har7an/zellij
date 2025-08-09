@@ -1,8 +1,8 @@
 use crate::errors::prelude::*;
 use crate::web_server_commands::InstructionForWebServer as RustInstructionForWebServer;
 use crate::web_server_contract::web_server_contract::{
-    instruction_for_web_server, InstructionForWebServer as ProtoInstructionForWebServer,
-    ShutdownWebServerMsg,
+    InstructionForWebServer as ProtoInstructionForWebServer, ShutdownWebServerMsg,
+    instruction_for_web_server,
 };
 
 // Convert Rust InstructionForWebServer to protobuf

@@ -18,10 +18,10 @@ mod ui;
 
 pub use daemonize;
 
-use background_jobs::{background_jobs_main, BackgroundJob};
+use background_jobs::{BackgroundJob, background_jobs_main};
 use log::info;
-use nix::sys::stat::{umask, Mode};
-use pty_writer::{pty_writer_main, PtyWriteInstruction};
+use nix::sys::stat::{Mode, umask};
+use pty_writer::{PtyWriteInstruction, pty_writer_main};
 use std::collections::{BTreeMap, HashMap, HashSet};
 use std::{
     net::{IpAddr, Ipv4Addr},
@@ -38,9 +38,9 @@ use wasmtime::{Config as WasmtimeConfig, Engine, Strategy};
 
 use crate::{
     os_input_output::ServerOsApi,
-    plugins::{plugin_thread_main, PluginInstruction},
-    pty::{get_default_shell, pty_thread_main, Pty, PtyInstruction},
-    screen::{screen_thread_main, ScreenInstruction},
+    plugins::{PluginInstruction, plugin_thread_main},
+    pty::{Pty, PtyInstruction, get_default_shell, pty_thread_main},
+    screen::{ScreenInstruction, screen_thread_main},
     thread_bus::{Bus, ThreadSenders},
 };
 use route::route_thread_main;
@@ -53,12 +53,12 @@ use zellij_utils::{
         ConnectToSession, Event, InputMode, KeyWithModifier, LayoutInfo, PluginCapabilities, Style,
         WebSharing,
     },
-    errors::{prelude::*, ContextType, ErrorInstruction, FatalError, ServerContext},
+    errors::{ContextType, ErrorInstruction, FatalError, ServerContext, prelude::*},
     home::{default_layout_dir, get_default_data_dir},
     input::{
         actions::Action,
         command::{RunCommand, TerminalAction},
-        config::{watch_config_file_changes, Config},
+        config::{Config, watch_config_file_changes},
         get_mode_info,
         keybinds::Keybinds,
         layout::{FloatingPaneLayout, Layout, PluginAlias, Run, RunPluginOrAlias},
@@ -1368,7 +1368,9 @@ pub fn start_server(mut os_input: Box<dyn ServerOsApi>, socket_path: PathBuf) {
                     );
                 } else {
                     // TODO: test this
-                    log::error!("Cannot start web server: this instance of Zellij was compiled without web_server_capability");
+                    log::error!(
+                        "Cannot start web server: this instance of Zellij was compiled without web_server_capability"
+                    );
                 }
             },
             ServerInstruction::ShareCurrentSession(_client_id) => {
@@ -1389,7 +1391,9 @@ pub fn start_server(mut os_input: Box<dyn ServerOsApi>, socket_path: PathBuf) {
                             .unwrap();
                     }
                 } else {
-                    log::error!("Cannot share session: this instance of Zellij was compiled without web_server_capability");
+                    log::error!(
+                        "Cannot share session: this instance of Zellij was compiled without web_server_capability"
+                    );
                 }
             },
             ServerInstruction::StopSharingCurrentSession(_client_id) => {
@@ -1429,7 +1433,9 @@ pub fn start_server(mut os_input: Box<dyn ServerOsApi>, socket_path: PathBuf) {
                     }
                 } else {
                     // TODO: test this
-                    log::error!("Cannot start web server: this instance of Zellij was compiled without web_server_capability");
+                    log::error!(
+                        "Cannot start web server: this instance of Zellij was compiled without web_server_capability"
+                    );
                 }
             },
             ServerInstruction::WebServerStarted(base_url) => {

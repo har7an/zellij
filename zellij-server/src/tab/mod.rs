@@ -33,6 +33,7 @@ use swap_layouts::SwapLayouts;
 
 use self::clipboard::ClipboardProvider;
 use crate::{
+    ClientId, ServerInstruction,
     os_input_output::ServerOsApi,
     output::{CharacterChunk, Output, SixelImageChunk},
     panes::floating_panes::floating_pane_grid::half_size_middle_geom,
@@ -42,7 +43,6 @@ use crate::{
     plugins::PluginInstruction,
     pty::{ClientTabIndexOrPaneId, NewPanePlacement, PtyInstruction, VteBytes},
     thread_bus::ThreadSenders,
-    ClientId, ServerInstruction,
 };
 use serde::{Deserialize, Serialize};
 use std::cell::RefCell;
@@ -4472,7 +4472,9 @@ impl Tab {
         client_id: ClientId,
     ) -> Result<()> {
         let err_context = || {
-            format!("failed to handle right mouse release at position {position:?} for client {client_id}")
+            format!(
+                "failed to handle right mouse release at position {position:?} for client {client_id}"
+            )
         };
 
         let active_pane = self.get_active_pane_or_floating_pane_mut(client_id);
@@ -4505,7 +4507,9 @@ impl Tab {
         client_id: ClientId,
     ) -> Result<()> {
         let err_context = || {
-            format!("failed to handle middle mouse release at position {position:?} for client {client_id}")
+            format!(
+                "failed to handle middle mouse release at position {position:?} for client {client_id}"
+            )
         };
 
         let active_pane = self.get_active_pane_or_floating_pane_mut(client_id);

@@ -1,1 +1,10 @@
 match_block_trailing_comma = true
+# NOTE: See also `workspace.package.edition` in `Cargo.toml`
+# NOTE: This is necessary next to setting the `edition` in `Cargo.toml` simply
+#       because `rustfmt` itself doesn't read metadata/config from `Cargo.toml`.
+#       This wouldn't be a problem for us (`cargo xtask` uses `cargo fmt` which
+#       *does* respect config from `Cargo.toml`), but many editors and
+#       integrations prefer to call bare `rustfmt` directly. So we copy the
+#       value here to avoid frustration. See also:
+#       <https://doc.rust-lang.org/nightly/edition-guide/rust-2024/rustfmt-style-edition.html>
+style_edition = "2024"

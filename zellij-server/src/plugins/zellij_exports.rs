@@ -1,10 +1,10 @@
 use super::PluginInstruction;
+use crate::ServerInstruction;
 use crate::background_jobs::BackgroundJob;
 use crate::plugins::plugin_map::PluginEnv;
 use crate::plugins::wasm_bridge::handle_plugin_crash;
 use crate::pty::{ClientTabIndexOrPaneId, NewPanePlacement, PtyInstruction};
 use crate::route::route_action;
-use crate::ServerInstruction;
 use async_std::task;
 use interprocess::local_socket::LocalSocketStream;
 use log::warn;
@@ -1269,7 +1269,9 @@ fn set_timeout(env: &PluginEnv, secs: f64) {
 }
 
 fn exec_cmd(env: &PluginEnv, mut command_line: Vec<String>) {
-    log::warn!("The ExecCmd plugin command is deprecated and will be removed in a future version. Please use RunCmd instead (it has all the things and can even show you STDOUT/STDERR and an exit code!)");
+    log::warn!(
+        "The ExecCmd plugin command is deprecated and will be removed in a future version. Please use RunCmd instead (it has all the things and can even show you STDOUT/STDERR and an exit code!)"
+    );
     let err_context = || {
         format!(
             "failed to execute command on host for plugin '{}'",
@@ -1280,8 +1282,11 @@ fn exec_cmd(env: &PluginEnv, mut command_line: Vec<String>) {
 
     // Bail out if we're forbidden to run command
     if !env.plugin._allow_exec_host_cmd {
-        warn!("This plugin isn't allow to run command in host side, skip running this command: '{cmd} {args}'.",
-        	cmd = command, args = command_line.join(" "));
+        warn!(
+            "This plugin isn't allow to run command in host side, skip running this command: '{cmd} {args}'.",
+            cmd = command,
+            args = command_line.join(" ")
+        );
         return;
     }
 

@@ -1,9 +1,9 @@
-use fuzzy_matcher::skim::SkimMatcherV2;
 use fuzzy_matcher::FuzzyMatcher;
+use fuzzy_matcher::skim::SkimMatcherV2;
 
 use crate::ui::{
-    components::{Colors, LineToRender, ListItem},
     SessionUiInfo,
+    components::{Colors, LineToRender, ListItem},
 };
 
 #[derive(Debug, Default)]

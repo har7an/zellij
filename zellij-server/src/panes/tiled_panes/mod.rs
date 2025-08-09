@@ -3,18 +3,18 @@ mod stacked_panes;
 mod tiled_pane_grid;
 
 use crate::resize_pty;
-use tiled_pane_grid::{split, TiledPaneGrid, RESIZE_PERCENT};
+use tiled_pane_grid::{RESIZE_PERCENT, TiledPaneGrid, split};
 
 use crate::{
+    ClientId,
     os_input_output::ServerOsApi,
     output::Output,
     panes::{ActivePanes, PaneId},
     plugins::PluginInstruction,
-    tab::{pane_info_for_pane, Pane, MIN_TERMINAL_HEIGHT, MIN_TERMINAL_WIDTH},
+    tab::{MIN_TERMINAL_HEIGHT, MIN_TERMINAL_WIDTH, Pane, pane_info_for_pane},
     thread_bus::ThreadSenders,
     ui::boundaries::Boundaries,
     ui::pane_contents_and_ui::PaneContentsAndUi,
-    ClientId,
 };
 use stacked_panes::StackedPanes;
 use zellij_utils::{

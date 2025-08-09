@@ -1,14 +1,14 @@
 use crate::{
     client_server_contract::client_server_contract::{
-        client_to_server_msg, server_to_client_msg, ActionMsg, AttachClientMsg, BackgroundColorMsg,
-        CliPipeOutputMsg, ClientExitedMsg, ClientToServerMsg as ProtoClientToServerMsg,
-        ColorRegistersMsg, ConfigFileUpdatedMsg, ConnStatusMsg, ConnectedMsg, DetachSessionMsg,
-        ExitMsg, ExitReason as ProtoExitReason, FailedToStartWebServerMsg, FirstClientConnectedMsg,
-        ForegroundColorMsg, InputMode as ProtoInputMode, KeyMsg, KillSessionMsg, LogErrorMsg,
-        LogMsg, QueryTerminalSizeMsg, RenamedSessionMsg, RenderMsg,
+        ActionMsg, AttachClientMsg, BackgroundColorMsg, CliPipeOutputMsg, ClientExitedMsg,
+        ClientToServerMsg as ProtoClientToServerMsg, ColorRegistersMsg, ConfigFileUpdatedMsg,
+        ConnStatusMsg, ConnectedMsg, DetachSessionMsg, ExitMsg, ExitReason as ProtoExitReason,
+        FailedToStartWebServerMsg, FirstClientConnectedMsg, ForegroundColorMsg,
+        InputMode as ProtoInputMode, KeyMsg, KillSessionMsg, LogErrorMsg, LogMsg,
+        QueryTerminalSizeMsg, RenamedSessionMsg, RenderMsg,
         ServerToClientMsg as ProtoServerToClientMsg, StartWebServerMsg, SwitchSessionMsg,
         TerminalPixelDimensionsMsg, TerminalResizeMsg, UnblockCliPipeInputMsg,
-        UnblockInputThreadMsg, WebServerStartedMsg,
+        UnblockInputThreadMsg, WebServerStartedMsg, client_to_server_msg, server_to_client_msg,
     },
     data::InputMode,
     errors::prelude::*,
@@ -680,7 +680,7 @@ impl From<crate::input::actions::Action>
 {
     fn from(action: crate::input::actions::Action) -> Self {
         use crate::client_server_contract::client_server_contract::{
-            action::ActionType, BreakPaneAction, BreakPaneLeftAction, BreakPaneRightAction,
+            BreakPaneAction, BreakPaneLeftAction, BreakPaneRightAction,
             ChangeFloatingPaneCoordinatesAction, ClearScreenAction, CliPipeAction,
             CloseFocusAction, ClosePluginPaneAction, CloseTabAction, CloseTerminalPaneAction,
             ConfirmAction, CopyAction, DenyAction, DetachAction, DumpLayoutAction,
@@ -704,7 +704,7 @@ impl From<crate::input::actions::Action>
             ToggleFloatingPanesAction, ToggleFocusFullscreenAction, ToggleGroupMarkingAction,
             ToggleMouseModeAction, TogglePaneEmbedOrFloatingAction, TogglePaneFramesAction,
             TogglePaneInGroupAction, TogglePanePinnedAction, ToggleTabAction, UndoRenamePaneAction,
-            UndoRenameTabAction, WriteAction, WriteCharsAction,
+            UndoRenameTabAction, WriteAction, WriteCharsAction, action::ActionType,
         };
         use std::collections::HashMap;
 
@@ -2517,7 +2517,7 @@ impl From<crate::input::layout::RunPluginLocation>
 {
     fn from(location: crate::input::layout::RunPluginLocation) -> Self {
         use crate::client_server_contract::client_server_contract::{
-            run_plugin_location_data::LocationData, RunPluginLocation as ProtoRunPluginLocation,
+            RunPluginLocation as ProtoRunPluginLocation, run_plugin_location_data::LocationData,
         };
         match location {
             crate::input::layout::RunPluginLocation::File(path) => Self {
@@ -2955,7 +2955,7 @@ impl TryFrom<crate::client_server_contract::client_server_contract::RunPluginLoc
         location: crate::client_server_contract::client_server_contract::RunPluginLocationData,
     ) -> Result<Self> {
         use crate::client_server_contract::client_server_contract::{
-            run_plugin_location_data::LocationData, RunPluginLocation as ProtoRunPluginLocation,
+            RunPluginLocation as ProtoRunPluginLocation, run_plugin_location_data::LocationData,
         };
 
         let location_data = location

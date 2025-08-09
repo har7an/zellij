@@ -23,11 +23,11 @@ pub mod prelude {
     #[cfg(not(target_family = "wasm"))]
     pub use super::ToAnyhow;
     pub use super::ZellijError;
-    pub use anyhow::anyhow;
-    pub use anyhow::bail;
     pub use anyhow::Context;
     pub use anyhow::Error as anyError;
     pub use anyhow::Result;
+    pub use anyhow::anyhow;
+    pub use anyhow::bail;
 }
 
 pub trait ErrorInstruction {
@@ -632,7 +632,7 @@ pub use not_wasm::*;
 #[cfg(not(target_family = "wasm"))]
 mod not_wasm {
     use super::*;
-    use crate::channels::{SenderWithContext, ASYNCOPENCALLS, OPENCALLS};
+    use crate::channels::{ASYNCOPENCALLS, OPENCALLS, SenderWithContext};
     use miette::{Diagnostic, GraphicalReportHandler, GraphicalTheme, Report};
     use std::panic::PanicHookInfo;
     use thiserror::Error as ThisError;

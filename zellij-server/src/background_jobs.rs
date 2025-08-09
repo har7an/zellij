@@ -1,15 +1,15 @@
 use async_std::task;
 use zellij_utils::consts::{
-    session_info_cache_file_name, session_info_folder_for_session, session_layout_cache_file_name,
-    VERSION, ZELLIJ_SESSION_INFO_CACHE_DIR, ZELLIJ_SOCK_DIR,
+    VERSION, ZELLIJ_SESSION_INFO_CACHE_DIR, ZELLIJ_SOCK_DIR, session_info_cache_file_name,
+    session_info_folder_for_session, session_layout_cache_file_name,
 };
 use zellij_utils::data::{Event, HttpVerb, SessionInfo, WebServerStatus};
-use zellij_utils::errors::{prelude::*, BackgroundJobContext, ContextType};
+use zellij_utils::errors::{BackgroundJobContext, ContextType, prelude::*};
 use zellij_utils::input::layout::RunPlugin;
 
-use isahc::prelude::*;
 use isahc::AsyncReadResponseExt;
-use isahc::{config::RedirectPolicy, HttpClient, Request};
+use isahc::prelude::*;
+use isahc::{HttpClient, Request, config::RedirectPolicy};
 
 use std::collections::{BTreeMap, HashMap};
 use std::fs;
@@ -17,16 +17,16 @@ use std::io::Write;
 use std::os::unix::fs::FileTypeExt;
 use std::path::PathBuf;
 use std::sync::{
-    atomic::{AtomicBool, Ordering},
     Arc, Mutex,
+    atomic::{AtomicBool, Ordering},
 };
 use std::time::{Duration, Instant};
 
+use crate::ClientId;
 use crate::panes::PaneId;
 use crate::plugins::{PluginId, PluginInstruction};
 use crate::screen::ScreenInstruction;
 use crate::thread_bus::Bus;
-use crate::ClientId;
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub enum BackgroundJob {
@@ -346,7 +346,9 @@ pub(crate) fn background_jobs_main(
                             Ok((status_code.as_u16(), headers, body))
                         }
                         let Some(http_client) = http_client else {
-                            log::error!("Cannot perform http request, likely due to a misconfigured http client");
+                            log::error!(
+                                "Cannot perform http request, likely due to a misconfigured http client"
+                            );
                             return;
                         };
 
@@ -404,7 +406,9 @@ pub(crate) fn background_jobs_main(
                             Ok((status_code.as_u16(), body))
                         }
                         let Some(http_client) = http_client else {
-                            log::error!("Cannot perform http request, likely due to a misconfigured http client");
+                            log::error!(
+                                "Cannot perform http request, likely due to a misconfigured http client"
+                            );
                             return;
                         };
 

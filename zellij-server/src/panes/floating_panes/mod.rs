@@ -5,17 +5,17 @@ use zellij_utils::{
 };
 
 use crate::resize_pty;
-use crate::tab::{pane_info_for_pane, Pane};
+use crate::tab::{Pane, pane_info_for_pane};
 use floating_pane_grid::FloatingPaneGrid;
 
 use crate::{
+    ClientId,
     os_input_output::ServerOsApi,
     output::{FloatingPanesStack, Output},
     panes::{ActivePanes, PaneId},
     plugins::PluginInstruction,
     thread_bus::ThreadSenders,
     ui::pane_contents_and_ui::PaneContentsAndUi,
-    ClientId,
 };
 use std::cell::RefCell;
 use std::collections::{BTreeMap, HashMap, HashSet};

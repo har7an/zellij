@@ -2,7 +2,7 @@
 
 use crate::home::find_default_config_dir;
 use directories::ProjectDirs;
-use include_dir::{include_dir, Dir};
+use include_dir::{Dir, include_dir};
 use lazy_static::lazy_static;
 use std::{path::PathBuf, sync::OnceLock};
 use uuid::Uuid;

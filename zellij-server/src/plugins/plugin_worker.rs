@@ -2,7 +2,7 @@ use crate::plugins::plugin_map::PluginEnv;
 use crate::plugins::zellij_exports::wasi_write_object;
 use wasmtime::{Instance, Store};
 
-use async_channel::{unbounded, Receiver, Sender};
+use async_channel::{Receiver, Sender, unbounded};
 use async_std::task;
 use prost::Message;
 use zellij_utils::errors::prelude::*;

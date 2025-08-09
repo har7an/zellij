@@ -1,13 +1,13 @@
 use std::collections::VecDeque;
 
-use crate::panes::selection::Selection;
 use crate::panes::Row;
+use crate::panes::selection::Selection;
 
 use crate::{
+    ClientId,
     panes::sixel::SixelImageStore,
     panes::terminal_character::{AnsiCode, CharacterStyles},
-    panes::{LinkHandler, TerminalCharacter, DEFAULT_STYLES, EMPTY_TERMINAL_CHARACTER},
-    ClientId,
+    panes::{DEFAULT_STYLES, EMPTY_TERMINAL_CHARACTER, LinkHandler, TerminalCharacter},
 };
 use std::cell::RefCell;
 use std::fmt::Write;

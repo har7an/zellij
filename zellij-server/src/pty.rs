@@ -1,12 +1,12 @@
 use crate::background_jobs::BackgroundJob;
 use crate::terminal_bytes::TerminalBytes;
 use crate::{
+    ClientId, ServerInstruction,
     panes::PaneId,
     plugins::{PluginId, PluginInstruction},
     screen::ScreenInstruction,
     session_layout_metadata::SessionLayoutMetadata,
     thread_bus::{Bus, ThreadSenders},
-    ClientId, ServerInstruction,
 };
 use async_std::{
     self,

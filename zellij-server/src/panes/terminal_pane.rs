@@ -1,13 +1,13 @@
+use crate::ClientId;
 use crate::output::{CharacterChunk, SixelImageChunk};
-use crate::panes::sixel::SixelImageStore;
 use crate::panes::LinkHandler;
+use crate::panes::sixel::SixelImageStore;
 use crate::panes::{
     grid::Grid,
-    terminal_character::{render_first_run_banner, TerminalCharacter, EMPTY_TERMINAL_CHARACTER},
+    terminal_character::{EMPTY_TERMINAL_CHARACTER, TerminalCharacter, render_first_run_banner},
 };
 use crate::pty::VteBytes;
 use crate::tab::{AdjustedInput, Pane};
-use crate::ClientId;
 use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
 use std::fmt::Debug;
@@ -228,7 +228,7 @@ impl Pane for TerminalPane {
             // panes who do not work in this mode
             match raw_input_bytes.as_slice() {
                 BRACKETED_PASTE_BEGIN | BRACKETED_PASTE_END => {
-                    return Some(AdjustedInput::WriteBytesToTerminal(vec![]))
+                    return Some(AdjustedInput::WriteBytesToTerminal(vec![]));
                 },
                 _ => {},
             }

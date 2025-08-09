@@ -3,7 +3,7 @@ pub use super::generated_api::api::{
     event::{EventNameList as ProtobufEventNameList, Header},
     input_mode::InputMode as ProtobufInputMode,
     plugin_command::{
-        plugin_command::Payload, BreakPanesToNewTabPayload, BreakPanesToTabWithIndexPayload,
+        BreakPanesToNewTabPayload, BreakPanesToTabWithIndexPayload,
         ChangeFloatingPanesCoordinatesPayload, ChangeHostFolderPayload,
         ClearScreenForPaneIdPayload, CliPipeOutputPayload, CloseMultiplePanesPayload,
         CloseTabWithIndexPayload, CommandName, ContextItem,
@@ -35,6 +35,7 @@ pub use super::generated_api::api::{
         StackPanesPayload, SubscribePayload, SwitchSessionPayload, SwitchTabToPayload,
         TogglePaneEmbedOrEjectForPaneIdPayload, TogglePaneIdFullscreenPayload, UnsubscribePayload,
         WebRequestPayload, WriteCharsToPaneIdPayload, WriteToPaneIdPayload,
+        plugin_command::Payload,
     },
     plugin_permission::PermissionType as ProtobufPermissionType,
     resize::ResizeAction as ProtobufResizeAction,
@@ -795,8 +796,10 @@ impl TryFrom<ProtobufPluginCommand> for PluginCommand {
                         (Some(pane_id), Some(is_plugin)) => Some((pane_id, is_plugin)),
                         (None, None) => None,
                         _ => {
-                            return Err("Malformed payload for SwitchSession, 'pane_id' and 'is_plugin' must be included together or not at all")
-                        }
+                            return Err(
+                                "Malformed payload for SwitchSession, 'pane_id' and 'is_plugin' must be included together or not at all",
+                            );
+                        },
                     };
                     Ok(PluginCommand::SwitchSession(ConnectToSession {
                         name: payload.name,
