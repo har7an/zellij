@@ -22,12 +22,7 @@ use directories::BaseDirs;
 use log::info;
 use serde::{Deserialize, Serialize};
 use std::{
-    convert::TryFrom,
-    fmt::Write as FmtWrite,
-    fs,
-    io::Write,
-    path::{Path, PathBuf},
-    process,
+    collections::BTreeMap, convert::TryFrom, fmt::Write as FmtWrite, fs, io::Write, path::{Path, PathBuf}, process, sync::LazyLock
 };
 
 const CONFIG_NAME: &str = "config.kdl";
@@ -115,76 +110,65 @@ pub fn get_theme_dir(config_dir: Option<PathBuf>) -> Option<PathBuf> {
     config_dir.map(|dir| dir.join("themes"))
 }
 
-pub fn dump_asset(asset: &[u8]) -> std::io::Result<()> {
-    std::io::stdout().write_all(asset)?;
-    Ok(())
+pub fn dump_asset(asset: &str) -> std::io::Result<()> {
+    std::io::stdout().lock().write_all(asset.as_bytes())
 }
 
-pub const DEFAULT_CONFIG: &[u8] = include_bytes!(concat!(
+pub const DEFAULT_CONFIG: &'static str = include_str!(concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/",
     "assets/config/default.kdl"
 ));
 
-pub const DEFAULT_LAYOUT: &[u8] = include_bytes!(concat!(
-    env!("CARGO_MANIFEST_DIR"),
-    "/",
-    "assets/layouts/default.kdl"
-));
+pub const BUILTIN_LAYOUTS: LazyLock<BTreeMap<&'static str, &'static str>> = LazyLock::new(|| {
+    macro_rules! include_layout {
+        ($map:expr, $name:literal) => {
+            $map.insert(
+                $name,
+                include_str!(concat!(
+                    env!("CARGO_MANIFEST_DIR"),
+                    "/",
+                    "assets/layouts/",
+                    $name,
+                    ".kdl"
+                ))
+            );
+        };
+    }
 
-pub const DEFAULT_SWAP_LAYOUT: &[u8] = include_bytes!(concat!(
-    env!("CARGO_MANIFEST_DIR"),
-    "/",
-    "assets/layouts/default.swap.kdl"
-));
+    let mut ret = BTreeMap::new();
+    include_layout!(ret, "default");
+    include_layout!(ret, "strider");
+    include_layout!(ret, "disable-status-bar");
+    include_layout!(ret, "compact");
+    include_layout!(ret, "classic");
+    include_layout!(ret, "welcome");
+    ret
+});
 
-pub const STRIDER_LAYOUT: &[u8] = include_bytes!(concat!(
-    env!("CARGO_MANIFEST_DIR"),
-    "/",
-    "assets/layouts/strider.kdl"
-));
+pub const BUILTIN_SWAP_LAYOUTS: LazyLock<BTreeMap<&'static str, &'static str>> = LazyLock::new(|| {
+    macro_rules! include_swap_layout {
+        ($map:expr, $name:literal) => {
+            $map.insert(
+                $name,
+                include_str!(concat!(
+                    env!("CARGO_MANIFEST_DIR"),
+                    "/",
+                    "assets/layouts/",
+                    $name,
+                    ".swap.kdl"
+                ))
+            )
+        };
+    }
 
-pub const STRIDER_SWAP_LAYOUT: &[u8] = include_bytes!(concat!(
-    env!("CARGO_MANIFEST_DIR"),
-    "/",
-    "assets/layouts/strider.swap.kdl"
-));
-
-pub const NO_STATUS_LAYOUT: &[u8] = include_bytes!(concat!(
-    env!("CARGO_MANIFEST_DIR"),
-    "/",
-    "assets/layouts/disable-status-bar.kdl"
-));
-
-pub const COMPACT_BAR_LAYOUT: &[u8] = include_bytes!(concat!(
-    env!("CARGO_MANIFEST_DIR"),
-    "/",
-    "assets/layouts/compact.kdl"
-));
-
-pub const COMPACT_BAR_SWAP_LAYOUT: &[u8] = include_bytes!(concat!(
-    env!("CARGO_MANIFEST_DIR"),
-    "/",
-    "assets/layouts/compact.swap.kdl"
-));
-
-pub const CLASSIC_LAYOUT: &[u8] = include_bytes!(concat!(
-    env!("CARGO_MANIFEST_DIR"),
-    "/",
-    "assets/layouts/classic.kdl"
-));
-
-pub const CLASSIC_SWAP_LAYOUT: &[u8] = include_bytes!(concat!(
-    env!("CARGO_MANIFEST_DIR"),
-    "/",
-    "assets/layouts/classic.swap.kdl"
-));
-
-pub const WELCOME_LAYOUT: &[u8] = include_bytes!(concat!(
-    env!("CARGO_MANIFEST_DIR"),
-    "/",
-    "assets/layouts/welcome.kdl"
-));
+    let mut ret = BTreeMap::new();
+    include_swap_layout!(ret, "default");
+    include_swap_layout!(ret, "strider");
+    include_swap_layout!(ret, "compact");
+    include_swap_layout!(ret, "classic");
+    ret
+});
 
 pub const FISH_EXTRA_COMPLETION: &[u8] = include_bytes!(concat!(
     env!("CARGO_MANIFEST_DIR"),
@@ -237,44 +221,41 @@ pub fn dump_default_config() -> std::io::Result<()> {
     dump_asset(DEFAULT_CONFIG)
 }
 
+/// Dump a layout to stdout by name.
+///
+/// If a builtin layout with the given name exists, that is dumped. Otherwise, if a layout with the
+/// name exists in the currently set layout directory, dump that instead.
 pub fn dump_specified_layout(layout: &str) -> std::io::Result<()> {
-    match layout {
-        "strider" => dump_asset(STRIDER_LAYOUT),
-        "default" => dump_asset(DEFAULT_LAYOUT),
-        "compact" => dump_asset(COMPACT_BAR_LAYOUT),
-        "disable-status" => dump_asset(NO_STATUS_LAYOUT),
-        "classic" => dump_asset(CLASSIC_LAYOUT),
-        custom => {
-            info!("Dump {custom} layout");
-            let custom = add_layout_ext(custom);
-            let home = default_layout_dir();
-            let path = home.map(|h| h.join(&custom));
-            let layout_exists = path.as_ref().map(|p| p.exists()).unwrap_or_default();
+    if let Some(content) = BUILTIN_LAYOUTS.get(layout) {
+        dump_asset(*content)
+    } else {
+        info!("Dump {layout} layout");
+        let custom = add_layout_ext(layout);
+        let home = default_layout_dir();
+        let path = home.map(|h| h.join(&custom));
+        let layout_exists = path.as_ref().map(|p| p.exists()).unwrap_or_default();
 
-            match (path, layout_exists) {
-                (Some(path), true) => {
-                    let content = fs::read_to_string(path)?;
-                    std::io::stdout().write_all(content.as_bytes())
-                },
-                _ => {
-                    log::error!("No layout named {custom} found");
-                    return Ok(());
-                },
-            }
-        },
+        match (path, layout_exists) {
+            (Some(path), true) => {
+                let content = fs::read_to_string(path)?;
+                std::io::stdout().write_all(content.as_bytes())
+            },
+            _ => {
+                log::error!("No layout named {custom} found");
+                return Ok(());
+            },
+        }
     }
 }
 
 pub fn dump_specified_swap_layout(swap_layout: &str) -> std::io::Result<()> {
-    match swap_layout {
-        "strider" => dump_asset(STRIDER_SWAP_LAYOUT),
-        "default" => dump_asset(DEFAULT_SWAP_LAYOUT),
-        "compact" => dump_asset(COMPACT_BAR_SWAP_LAYOUT),
-        "classic" => dump_asset(CLASSIC_SWAP_LAYOUT),
-        not_found => Err(std::io::Error::new(
+    if let Some(content) = BUILTIN_SWAP_LAYOUTS.get(swap_layout) {
+        dump_asset(*content)
+    } else {
+        Err(std::io::Error::new(
             std::io::ErrorKind::Other,
-            format!("Swap Layout not found for: {}", not_found),
-        )),
+            format!("Swap Layout not found for: {}", swap_layout),
+        ))
     }
 }
 

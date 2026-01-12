@@ -18,7 +18,7 @@ use crate::{
         config::{Config, ConfigError},
     },
     pane_size::{Constraint, Dimension, PaneGeom},
-    setup::{self},
+    setup::{BUILTIN_LAYOUTS, BUILTIN_SWAP_LAYOUTS},
 };
 #[cfg(not(target_family = "wasm"))]
 use async_std::task;
@@ -1453,13 +1453,11 @@ impl Layout {
     }
     pub fn default_layout_asset() -> Layout {
         Layout::from_kdl(
-            &Self::stringified_default_from_assets().unwrap(),
+            BUILTIN_LAYOUTS.get("default").unwrap(),
             None,
             Some((
                 "",
-                Self::stringified_default_swap_from_assets()
-                    .unwrap()
-                    .as_str(),
+                BUILTIN_SWAP_LAYOUTS.get("default").unwrap(),
             )),
             None,
         )
@@ -1522,93 +1520,27 @@ impl Layout {
         path: &Path,
     ) -> Result<(String, String, Option<(String, String)>), ConfigError> {
         // (path_to_layout as String, stringified_layout, Option<path_to_swap_layout as String, stringified_swap_layout>)
-        // TODO: ideally these should not be hard-coded
-        // we should load layouts by name from the config
-        // and load them from a hashmap or some such
-        match path.to_str() {
-            Some("default") => Ok((
-                "Default layout".into(),
-                Self::stringified_default_from_assets()?,
+        let layout_name = path.to_str().expect("layout asset name should be valid unicode");
+
+        match (BUILTIN_LAYOUTS.get(layout_name), BUILTIN_SWAP_LAYOUTS.get(layout_name)) {
+            (Some(layout), Some(swap_layout)) => Ok((
+                format!("{} layout", layout_name),
+                layout.to_string(),
                 Some((
-                    "Default swap layout".into(),
-                    Self::stringified_default_swap_from_assets()?,
-                )),
+                    format!("{} swap layout", layout_name),
+                    swap_layout.to_string(),
+                ))
             )),
-            Some("strider") => Ok((
-                "Strider layout".into(),
-                Self::stringified_strider_from_assets()?,
-                Some((
-                    "Strider swap layout".into(),
-                    Self::stringified_strider_swap_from_assets()?,
-                )),
+            (Some(layout), None) => Ok((
+                format!("{} layout", layout_name),
+                layout.to_string(),
+                None
             )),
-            Some("disable-status-bar") => Ok((
-                "Disable Status Bar layout".into(),
-                Self::stringified_disable_status_from_assets()?,
-                None,
-            )),
-            Some("compact") => Ok((
-                "Compact layout".into(),
-                Self::stringified_compact_from_assets()?,
-                Some((
-                    "Compact layout swap".into(),
-                    Self::stringified_compact_swap_from_assets()?,
-                )),
-            )),
-            Some("classic") => Ok((
-                "Classic layout".into(),
-                Self::stringified_classic_from_assets()?,
-                Some((
-                    "Classiclayout swap".into(),
-                    Self::stringified_classic_swap_from_assets()?,
-                )),
-            )),
-            Some("welcome") => Ok((
-                "Welcome screen layout".into(),
-                Self::stringified_welcome_from_assets()?,
-                None,
-            )),
-            None | Some(_) => Err(ConfigError::IoPath(
+            _ => Err(ConfigError::IoPath(
                 std::io::Error::new(std::io::ErrorKind::Other, "The layout was not found"),
                 path.into(),
             )),
         }
-    }
-    pub fn stringified_default_from_assets() -> Result<String, ConfigError> {
-        Ok(String::from_utf8(setup::DEFAULT_LAYOUT.to_vec())?)
-    }
-    pub fn stringified_default_swap_from_assets() -> Result<String, ConfigError> {
-        Ok(String::from_utf8(setup::DEFAULT_SWAP_LAYOUT.to_vec())?)
-    }
-    pub fn stringified_strider_from_assets() -> Result<String, ConfigError> {
-        Ok(String::from_utf8(setup::STRIDER_LAYOUT.to_vec())?)
-    }
-    pub fn stringified_strider_swap_from_assets() -> Result<String, ConfigError> {
-        Ok(String::from_utf8(setup::STRIDER_SWAP_LAYOUT.to_vec())?)
-    }
-
-    pub fn stringified_disable_status_from_assets() -> Result<String, ConfigError> {
-        Ok(String::from_utf8(setup::NO_STATUS_LAYOUT.to_vec())?)
-    }
-
-    pub fn stringified_compact_from_assets() -> Result<String, ConfigError> {
-        Ok(String::from_utf8(setup::COMPACT_BAR_LAYOUT.to_vec())?)
-    }
-
-    pub fn stringified_compact_swap_from_assets() -> Result<String, ConfigError> {
-        Ok(String::from_utf8(setup::COMPACT_BAR_SWAP_LAYOUT.to_vec())?)
-    }
-
-    pub fn stringified_classic_from_assets() -> Result<String, ConfigError> {
-        Ok(String::from_utf8(setup::CLASSIC_LAYOUT.to_vec())?)
-    }
-
-    pub fn stringified_classic_swap_from_assets() -> Result<String, ConfigError> {
-        Ok(String::from_utf8(setup::CLASSIC_SWAP_LAYOUT.to_vec())?)
-    }
-
-    pub fn stringified_welcome_from_assets() -> Result<String, ConfigError> {
-        Ok(String::from_utf8(setup::WELCOME_LAYOUT.to_vec())?)
     }
 
     pub fn new_tab(&self) -> (TiledPaneLayout, Vec<FloatingPaneLayout>) {

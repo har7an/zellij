@@ -176,7 +176,7 @@ impl Config {
     }
     /// Gets default configuration from assets
     pub fn from_default_assets() -> ConfigResult {
-        let cfg = String::from_utf8(setup::DEFAULT_CONFIG.to_vec())?;
+        let cfg = setup::DEFAULT_CONFIG.to_owned();
         match Self::from_kdl(&cfg, None) {
             Ok(config) => Ok(config),
             Err(ConfigError::KdlError(kdl_error)) => Err(ConfigError::KdlError(
