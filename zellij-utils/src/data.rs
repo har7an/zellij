@@ -6,6 +6,7 @@ use crate::input::layout::{RunPlugin, RunPluginOrAlias, SplitSize};
 use crate::pane_size::PaneGeom;
 use crate::position::Position;
 use crate::shared::{colors as default_colors, eightbit_to_rgb};
+use anyhow::Context as _;
 use clap::ArgEnum;
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
@@ -16,7 +17,9 @@ use std::path::{Path, PathBuf};
 use std::str::{self, FromStr};
 use std::time::Duration;
 use strum_macros::{Display, EnumDiscriminants, EnumIter, EnumString};
+use tracing::{debug, error, info};
 use unicode_width::UnicodeWidthChar;
+use url::Url;
 
 #[cfg(not(target_family = "wasm"))]
 use termwiz::{
@@ -1712,6 +1715,499 @@ impl From<RunPlugin> for PluginInfo {
             configuration: run_plugin.configuration.inner().clone(),
         }
     }
+}
+
+/// A generic identifier for some layout file.
+///
+/// This is constructed from user-input and can contain arbitrary text. In order to turn this into
+/// an actual layout, it must be [`LayoutIdentifier::resolve`]d first which is context-dependent.
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct LayoutIdentifier(String);
+
+impl FromStr for LayoutIdentifier {
+    type Err = std::convert::Infallible;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Self(s.to_owned()))
+    }
+}
+
+/// Valid schemes for Layout URLs.
+pub const LAYOUT_URL_SCHEMES: [&'static str; 2] = ["http://", "https://"];
+pub const LAYOUT_FILE_EXTENSION: &'static str = "kdl";
+
+/// Origin of a layout identifier.
+///
+/// The layout is resolved differently based on where the layout is defined, see
+/// <https://github.com/zellij-org/zellij/pull/1426>
+#[derive(Debug, Clone)]
+#[non_exhaustive]
+pub enum LayoutIdentifierSource {
+    /// Layout identifier was given via CLI
+    ///
+    /// Includes the startup directory in order to correctly resolve relative paths.
+    Cli { startup_dir: PathBuf },
+    /// Layout identifier was given via config file
+    Config,
+}
+
+impl LayoutIdentifier {
+    /// Resolve the layout identifier to a [layout source](LayoutSource).
+    ///
+    /// Resolution behavior depends on the value of `source`. The following rules apply in this
+    /// exact order:
+    ///
+    /// - For URL inputs ("http://", "https://"):
+    ///     - URLs are always resolved the same, regardless of `source`.
+    ///     - URLs with unsupported schemes cause an error.
+    /// - For absolute file paths ("/..."):
+    ///     - Absolute file paths are always resolved the same, regardless of `source`.
+    ///     - No check is performed on the paths.
+    /// - For relative file paths ("my/...", "foo.kdl"):
+    ///     - If `source` is the CLI, the path fragment is appended to the `startup_dir` given in
+    ///       `source`
+    ///     - If `source` is the Config, the path fragment is appended to the `layout_dir`
+    /// - For bare identifiers ("default", "custom"):
+    ///     - Relative paths are checked first (see above)
+    ///     - Builtin layouts (from assets) are checked for a match
+    ///
+    /// If none of the above produces a valid layout source, and error is returned.
+    #[tracing::instrument(skip(self), fields(layout = ?self))]
+    pub fn resolve<P: Into<PathBuf> + std::fmt::Debug>(
+        &self,
+        source: LayoutIdentifierSource,
+        layout_dir: P,
+    ) -> Result<LayoutSource, anyhow::Error> {
+        info!("resolving layout");
+
+        // URLs are universally valid
+        if LAYOUT_URL_SCHEMES.iter().any(|s| self.0.starts_with(s)) {
+            debug!("resolving layout as URL");
+            return Url::from_str(&self.0)
+                .with_context(|| format!("failed to parse valid URL from layout {:?}", &self.0))
+                .map(LayoutSource::Url);
+        }
+        // Anything that looks like a URL but doesn't pass the test above is invalid.
+        if self.0.contains("://") {
+            anyhow::bail!(
+                "layout identifier {:?} looks like a URL, but only the following schemes are supported: {}",
+                &self.0,
+                LAYOUT_URL_SCHEMES.join(", ")
+            );
+        }
+
+        // We resolve the layout source directory to an absolute path for clarity in error and log
+        // messages. The resolution is performed up-front so it doesn't clutter up the code below.
+        // Since path canonicalization is a fallible operation we wrap this into a closure to
+        // ensure the program doesn't error out when this code path isn't actually required.
+        let layout_directory_root = || -> Result<PathBuf, anyhow::Error> {
+            layout_dir
+                .into()
+                .canonicalize()
+                .context("failed to resolve layout directory to absolute path")
+        };
+
+        match PathBuf::try_from(&self.0) {
+            Ok(layout_path) if layout_path.is_absolute() => {
+                debug!(?layout_path, "resolving layout from absolute path");
+                return Ok(LayoutSource::File(layout_path));
+            },
+            Ok(layout_path)
+                if (layout_path.extension().is_some()
+                    || (layout_path.components().count() > 1)) =>
+            {
+                let layout_path_root = match source {
+                    LayoutIdentifierSource::Config => layout_directory_root(),
+                    LayoutIdentifierSource::Cli { startup_dir } => startup_dir
+                        .canonicalize()
+                        .context("failed to resolve CLI startup dir to absolute path"),
+                }
+                .context("failed to resolve layout from relative path")?;
+                let absolute_layout_path = layout_path_root.join(layout_path);
+
+                debug!(?absolute_layout_path, "resolving layout from relative path");
+                return Ok(LayoutSource::File(absolute_layout_path));
+            },
+            Ok(layout_path)
+                if (layout_path.extension().is_none()
+                    && (layout_path.components().count() == 1)) =>
+            {
+                let mut absolute_layout_path = layout_directory_root()
+                    .context("failed to check layouts in the layout directory")?;
+                absolute_layout_path.push(layout_path);
+                if absolute_layout_path.set_extension(LAYOUT_FILE_EXTENSION) {
+                    match absolute_layout_path.try_exists() {
+                        Ok(true) => {
+                            debug!(layout_path=?absolute_layout_path, "resolving layout from layout directory");
+                            return Ok(LayoutSource::File(absolute_layout_path));
+                        },
+                        // Must be a builtin layout
+                        Ok(false) => (),
+                        Err(e) => {
+                            error!(
+                                layout_path=?absolute_layout_path,
+                                error=%e,
+                                "cannot determine if layout path exists, falling back to builtin layouts"
+                            );
+                        },
+                    }
+                } else {
+                    error!(
+                        extension = LAYOUT_FILE_EXTENSION,
+                        "failed to append file extension to layout name"
+                    );
+                }
+            },
+            Err(e) => {
+                debug!(error = %e, "failed to resolve layout as path");
+            },
+            // This could mean a lot of things, see below
+            _ => (),
+        }
+
+        debug!("resolving layout from builtin layouts");
+        if crate::setup::BUILTIN_LAYOUTS.contains_key(self.0.as_str()) {
+            return Ok(LayoutSource::BuiltIn(self.0.clone()));
+        } else {
+            anyhow::bail!("failed to resolve {:?} to a valid layout", &self.0);
+        }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    mod layout_source {
+        use super::*;
+
+        macro_rules! test_id {
+            ($dest:expr) => {
+                LayoutIdentifier::from_str($dest.into()).unwrap()
+            };
+        }
+
+        fn project_subdir<P: Into<PathBuf>>(path_fragment: P) -> PathBuf {
+            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(path_fragment.into())
+        }
+        fn cli_source<P: Into<PathBuf>>(startup_dir: P) -> LayoutIdentifierSource {
+            LayoutIdentifierSource::Cli {
+                startup_dir: startup_dir.into(),
+            }
+        }
+        fn cwd_source() -> LayoutIdentifierSource {
+            LayoutIdentifierSource::Cli {
+                startup_dir: std::env::current_dir().unwrap(),
+            }
+        }
+        fn config_source() -> LayoutIdentifierSource {
+            LayoutIdentifierSource::Config
+        }
+
+        #[test]
+        fn http_url_works() {
+            let id = test_id!("http://example.com/my/layout.kdl");
+
+            let ret = id.resolve(cwd_source(), "/some/layout/dir").unwrap();
+
+            assert!(matches!(ret, LayoutSource::Url(_)));
+        }
+
+        #[test]
+        fn http_url_content() {
+            let id = test_id!("http://example.com/my/layout.kdl");
+
+            let ret = id.resolve(cwd_source(), "/some/layout/dir").unwrap();
+
+            // Make sure URL content remains the same
+            let LayoutSource::Url(the_url) = ret else {
+                panic!("parsing should yield URL");
+            };
+            assert_eq!(
+                the_url,
+                Url::from_str("http://example.com/my/layout.kdl").unwrap()
+            );
+        }
+
+        #[test]
+        fn https_url_works() {
+            let id = test_id!("https://example.com/my/layout.kdl");
+
+            let ret = id.resolve(cwd_source(), "/some/layout/dir").unwrap();
+
+            assert!(matches!(ret, LayoutSource::Url(_)));
+        }
+
+        #[test]
+        fn urls_resolve_the_same() {
+            let id = test_id!("https://example.com/my/layout.kdl");
+
+            let Ok(LayoutSource::Url(url1)) = id.resolve(cwd_source(), "/some/layout/dir") else {
+                panic!("parsing URL failed");
+            };
+            let Ok(LayoutSource::Url(url2)) = id.resolve(config_source(), "/different/dir") else {
+                panic!("parsing URL failed");
+            };
+
+            assert_eq!(url1, url2);
+        }
+
+        #[test]
+        fn file_url_fails() {
+            let id = test_id!("file://opt/my/layout.kdl");
+
+            let ret = id.resolve(cwd_source(), "/some/layout/dir");
+
+            assert!(ret.is_err())
+        }
+
+        #[test]
+        fn absolute_layout_path() {
+            let id = test_id!("/my/layout.kdl");
+
+            let ret = id.resolve(cwd_source(), "/any/old/path").unwrap();
+
+            let LayoutSource::File(path) = ret else {
+                panic!("resolving should yield filepath");
+            };
+            assert_eq!(path, "/my/layout.kdl".to_string());
+        }
+
+        #[test]
+        fn absolute_layouts_resolve_the_same() {
+            let id = test_id!("/my/layout.kdl");
+
+            let ret1 = id.resolve(cwd_source(), "/any/old/path").unwrap();
+            let ret2 = id.resolve(config_source(), "/another/path").unwrap();
+
+            assert!(matches!(ret1, LayoutSource::File(_)));
+            assert_eq!(ret1, ret2);
+        }
+
+        #[test]
+        fn relative_layout_path_with_extension_from_cli() {
+            let id = test_id!("layout.kdl");
+            let cwd = std::env::current_dir().unwrap();
+
+            let ret = id.resolve(cli_source(&cwd), "/any/old/path").unwrap();
+
+            let LayoutSource::File(path) = ret else {
+                panic!("resolving should yield file path");
+            };
+            assert_eq!(path, format!("{}/layout.kdl", cwd.display()));
+        }
+
+        #[test]
+        fn relative_layout_path_with_extension_from_config() {
+            let id = test_id!("layout.kdl");
+
+            let ret = id
+                .resolve(config_source(), project_subdir("assets/layouts/"))
+                .unwrap();
+
+            let LayoutSource::File(path) = ret else {
+                panic!("resolving should yield file path");
+            };
+            assert_eq!(path, project_subdir("assets/layouts/layout.kdl"));
+        }
+
+        #[test]
+        fn relative_layout_path_with_extension_resolves_the_same() {
+            let id = test_id!("layout.kdl");
+            let cwd = std::env::current_dir().unwrap();
+
+            let ret1 = id.resolve(cwd_source(), "/irrelevant/path").unwrap();
+            let ret2 = id.resolve(config_source(), cwd).unwrap();
+
+            assert!(matches!(ret1, LayoutSource::File(_)));
+            assert_eq!(ret1, ret2);
+        }
+
+        #[test]
+        fn relative_layout_path_with_separator_from_cli() {
+            let id = test_id!("my/layout.kdl");
+            let cwd = std::env::current_dir().unwrap();
+
+            let ret = id.resolve(cli_source(&cwd), "/making/up/paths").unwrap();
+
+            let LayoutSource::File(path) = ret else {
+                panic!("resolving should yield file path");
+            };
+            assert_eq!(path, format!("{}/my/layout.kdl", cwd.display()));
+        }
+
+        #[test]
+        fn relative_layout_path_with_separator_from_config() {
+            let id = test_id!("my/layout.kdl");
+
+            let ret = id
+                .resolve(config_source(), project_subdir("assets/layouts/"))
+                .unwrap();
+
+            let LayoutSource::File(path) = ret else {
+                panic!("resolving should yield file path");
+            };
+            assert_eq!(path, project_subdir("assets/layouts/my/layout.kdl"));
+        }
+
+        #[test]
+        fn relative_layout_path_with_separator_resolves_the_same() {
+            let id = test_id!("my/layout.kdl");
+            let cwd = std::env::current_dir().unwrap();
+
+            let ret1 = id.resolve(cli_source(&cwd), "/irrelevant/path").unwrap();
+            let ret2 = id.resolve(config_source(), cwd).unwrap();
+
+            assert!(matches!(ret1, LayoutSource::File(_)));
+            assert_eq!(ret1, ret2);
+        }
+
+        #[test]
+        fn layout_with_trailing_slash_is_garbage() {
+            let id = test_id!("strange/");
+
+            let ret = id.resolve(cwd_source(), "/this/wont/work");
+
+            assert!(ret.is_err());
+        }
+
+        // Verify that bare layout names (without any path indication) are resolved from the layout
+        // directory
+        #[test]
+        fn bare_layout_name_from_cli_resolves_to_layout_dir() {
+            let id = test_id!("default");
+
+            let ret = id
+                .resolve(
+                    cli_source(project_subdir("")),
+                    project_subdir("assets/layouts/"),
+                )
+                .unwrap();
+
+            let LayoutSource::File(path) = ret else {
+                panic!("resolving should yield file path");
+            };
+            assert_eq!(path, project_subdir("assets/layouts/default.kdl"));
+        }
+
+        #[test]
+        fn bare_layout_name_from_config_resolves_to_layout_dir() {
+            let id = test_id!("default");
+
+            let ret = id
+                .resolve(config_source(), project_subdir("assets/layouts/"))
+                .unwrap();
+
+            let LayoutSource::File(path) = ret else {
+                panic!("resolving should yield file path");
+            };
+            assert_eq!(path, project_subdir("assets/layouts/default.kdl"));
+        }
+
+        // NOTE: We ensure that the file 'ambiguous' is never created in the temporary test folder,
+        // so it cannot be resolved as a filepath. It's also not a builtin layout name, so this
+        // must fail.
+        #[test]
+        fn nonexistent_bare_layout_name_from_cli() {
+            let id = test_id!("ambiguous");
+
+            // Good luck finding layouts in the plugin folder.
+            let ret = id.resolve(
+                cli_source(project_subdir("assets/plugins/")),
+                "/irrelevant/path",
+            );
+
+            assert!(ret.is_err());
+        }
+
+        // NOTE: See note on test [`nonexistent_bare_layout_name_from_cli()`] above.
+        #[test]
+        fn nonexistent_bare_layout_name_from_config() {
+            let id = test_id!("ambiguous");
+
+            // Good luck finding layouts in the plugin folder.
+            let ret = id.resolve(config_source(), project_subdir("assets/plugins/"));
+
+            assert!(ret.is_err());
+        }
+
+        // NOTE: We ensure that the file 'default' is never created in the test folder, so it
+        // cannot be resolved as a filepath. It is however a valid builtin name, so this works
+        // fine.
+        #[test]
+        fn builtin_layout_name_from_cli_with_missing_file_resolves_to_builtin() {
+            let id = test_id!("default");
+            // Ensure the file really doesn't exist
+            assert!(
+                !std::fs::exists(project_subdir("assets/plugins/").join("default.kdl")).unwrap()
+            );
+
+            // Good luck finding layouts in the plugin folder.
+            let ret = id
+                .resolve(
+                    cli_source("nobody/cares"),
+                    project_subdir("assets/plugins/"),
+                )
+                .unwrap();
+
+            let LayoutSource::BuiltIn(name) = ret else {
+                panic!("resolving should yield builtin name");
+            };
+            assert_eq!(name, "default");
+        }
+
+        /// NOTE: See note on test
+        /// [`builtin_layout_name_from_cli_with_missing_file_resolves_to_builtin()`] above.
+        #[test]
+        fn builtin_layout_name_from_config_with_missing_file_resolves_to_builtin() {
+            let id = test_id!("default");
+            // Ensure the file really doesn't exist
+            assert!(
+                !std::fs::exists(project_subdir("assets/plugins/").join("default.kdl")).unwrap()
+            );
+
+            // Good luck finding layouts in the plugin folder.
+            let ret = id
+                .resolve(config_source(), project_subdir("assets/plugins/"))
+                .unwrap();
+
+            let LayoutSource::BuiltIn(name) = ret else {
+                panic!("resolving should yield builtin name");
+            };
+            assert_eq!(name, "default");
+        }
+
+        #[test]
+        fn ambiguous_layout_prefers_files_over_builtins() {
+            let id = test_id!("default");
+            // Ensure the file really does exist
+            assert!(
+                std::fs::exists(project_subdir("assets/layouts/").join("default.kdl")).unwrap()
+            );
+
+            let ret = id
+                .resolve(config_source(), project_subdir("assets/layouts/"))
+                .unwrap();
+
+            let LayoutSource::File(path) = ret else {
+                panic!("resolving should yield file path");
+            };
+            assert_eq!(path, project_subdir("assets/layouts/default.kdl"));
+        }
+    }
+}
+
+/// Source description of a layout.
+///
+/// See [`LayoutIdentifier::resolve`] for a convenient function to obtain these.
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize)]
+pub enum LayoutSource {
+    /// A builtin layout, compiled into the application as text asset file.
+    BuiltIn(String),
+    /// A layout to be read from the filesystem at the given path.
+    File(PathBuf),
+    /// A layout to be fetched from the given URL.
+    Url(Url),
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize)]
